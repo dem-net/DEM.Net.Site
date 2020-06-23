@@ -1,48 +1,63 @@
 <template>
     <!--    Only if WebGL is supported :-->
-    <div v-if="isWebglSupported" ref="refViewer" id="viewer">
+    <div v-if="isWebglSupported" id="viewer">
         <!--        Button to open or close GUI menu-->
-        <div :class="[isFullscreen && 'btnTguiFullscreen']" ref="refBtnToggleGui" @click="toggleGui"
-             class="btnToggleGui"> {{isGuiShown ? 'close controls' : 'open controls'}}
+        <div :class="[isFullscreen && 'btnTguiFullscreen'] + ' btnToggleGui'" @click="toggleGui">
+            {{isGuiShown ? 'close controls' : 'open controls'}}
         </div>
         <!--        GUI : We can create a Vue component for that-->
         <ul :class="[isFullscreen && 'guiFullscreen', isGuiShown && 'shown']" class="gui">
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label for="inputModelVisible"> Model visibility </label>
                     <input v-model="modelVisible" id="inputModelVisible" type="checkbox"/>
                 </div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
-                    <label for="inputFog"> Fog </label>
+                    <label class="labelBold" for="inputFog"> Fog </label>
                     <input v-model="fogEnabled" id="inputFog" type="checkbox"/>
                 </div>
+                <button @click="toggleSubmenu" class="btnToggleSubmenu"> Fog</button>
+                <!--                Submenu Fog  -->
+                <ul class="submenu">
+                    <li>
+                        <div class="labelInput">
+                            <label for="inputFogDensity"> Density </label>
+                            <input ref="refInputFogDensity" v-model="fogDensity" min="0.00002" max="0.02"
+                                   id="inputFogDensity" type="range"
+                                   step="0.00001"/>
+                        </div>
+                    </li>
+                </ul>
+                <div class="endSubmenu"></div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
-                    <label for="inputFog"> Wireframe </label>
-                    <input v-model="wireframeEnabled" id="inputWirefram" type="checkbox"/>
+                    <label for="inputWireframe"> Wireframe </label>
+                    <input v-model="wireframeEnabled" id="inputWireframe" type="checkbox"/>
                 </div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label for="inputFilm"> Film </label>
                     <input v-model="filmPassEnabled" id="inputFilm" type="checkbox"/>
                 </div>
             </li>
-            <li v-if="format === 'glTF'">
+            <li v-if="format === 'glTF'" class="guiItem">
                 <div class="labelInput">
                     <span class="labelBold"> Anisotropy </span>
                     <span>{{ anisoLevel}}</span>
                 </div>
                 <button @click="toggleSubmenu" class="btnToggleSubmenu"> Anisotropy</button>
                 <!--                Submenu Anisotropy  -->
-                <ul ref="submenuAniso" class="submenu">
-                    <div class="labelInput">
-                        <span> Max for your GPU : </span>
-                        <span>{{ maxAnisotropy}}</span>
-                    </div>
+                <ul class="submenu">
+                    <li>
+                        <div class="labelInput">
+                            <span> Max for your GPU : </span>
+                            <span>{{ maxAnisotropy}}</span>
+                        </div>
+                    </li>
                     <li>
                         <div class="labelInput">
                             <label for="inputAnisoLevel"> Samples </label>
@@ -57,35 +72,35 @@
                             </select>
                         </div>
                     </li>
-                    <div class="endSubmenu"></div>
                 </ul>
+                <div class="endSubmenu"></div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label for="inputSSAA"> SSAA </label>
                     <input v-model="ssaaRenderPassEnabled" id="inputSSAA" type="checkbox"/>
                 </div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label for="inputRotation"> Rotate </label>
                     <input v-model="rotationEnbaled" id="inputRotation" type="checkbox"/>
                 </div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label for="inputBackground"> background </label>
                     <input id="inputBackground" v-model="backgroundEnabled" type="checkbox"/>
                 </div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label class="labelBold" for="inputSAO"> SAO </label>
-                    <input v-model="saoPassEnabled" ref="inputSAO" id="inputSAO" type="checkbox"/>
+                    <input v-model="saoPassEnabled" id="inputSAO" type="checkbox"/>
                 </div>
                 <button @click="toggleSubmenu" class="btnToggleSubmenu"> SAO</button>
                 <!--                Submenu SAO  -->
-                <ul ref="submenuSAO" class="submenu">
+                <ul class="submenu">
                     <li>
                         <div class="labelInput">
                             <label for="inputSAOoutput"> output </label>
@@ -162,46 +177,63 @@
                                    type="range" step="0.001"/>
                         </div>
                     </li>
-                    <div class="endSubmenu"></div>
                 </ul>
+                <div class="endSubmenu"></div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
                     <label class="labelBold" for="inputDlight"> D Light </label>
                     <input v-model="dLightVisible" id="inputDlight" type="checkbox"/>
                 </div>
                 <!--                Submenu D light  -->
                 <button @click="toggleSubmenu" class="btnToggleSubmenu"> D Light</button>
-                <ul ref="submenuDlight" class="submenu">
+                <ul class="submenu">
                     <li>
                         <div class="labelInput">
                             <label for="inputDlightX"> D Light X </label>
-                            <input v-model="dLightPosition.x" min="-1000" max="1000" id="inputDlightX"
-                                   type="range" step="1"/>
+                            <input v-model="dLightPosition.x" min="-200" max="200" id="inputDlightX"
+                                   type="range" step="0.1"/>
                         </div>
                     </li>
                     <li>
                         <div class="labelInput">
                             <label for="inputDlightY"> D Light Y </label>
-                            <input v-model="dLightPosition.y" min="-1000" max="1000" id="inputDlightY"
-                                   type="range" step="1"/>
+                            <input v-model="dLightPosition.y" min="-200" max="200" id="inputDlightY"
+                                   type="range" step="0.1"/>
                         </div>
                     </li>
                     <li>
                         <div class="labelInput">
                             <label for="inputDlightZ"> D Light Z </label>
-                            <input v-model="dLightPosition.z" min="-1000" max="1000" id="inputDlightZ"
-                                   type="range" step="1"/>
+                            <input v-model="dLightPosition.z" min="-200" max="200" id="inputDlightZ"
+                                   type="range" step="0.1"/>
                         </div>
                     </li>
-                    <div class="endSubmenu"></div>
+                    <li>
+                        <div class="labelInput">
+                            <label for="inputDlightHelper"> Helper </label>
+                            <input v-model="dLightHelperVisible" id="inputDlightHelper" type="checkbox"/>
+                        </div>
+                    </li>
                 </ul>
+                <div class="endSubmenu"></div>
             </li>
-            <li>
+            <li class="guiItem">
                 <div class="labelInput">
-                    <label for="inputHlight"> H Light </label>
+                    <label class="labelBold" for="inputHlight"> H Light </label>
                     <input v-model="hLightVisible" id="inputHlight" type="checkbox"/>
                 </div>
+                <!--                Submenu H light  -->
+                <button @click="toggleSubmenu" class="btnToggleSubmenu"> H Light</button>
+                <ul class="submenu">
+                    <li>
+                        <div class="labelInput">
+                            <label for="inputHlightHelper"> Helper </label>
+                            <input v-model="hLightHelperVisible" id="inputHlightHelper" type="checkbox"/>
+                        </div>
+                    </li>
+                </ul>
+                <div class="endSubmenu"></div>
             </li>
         </ul>
         <!--        Button to toggle fullscreen -->
@@ -268,24 +300,32 @@ export default {
             anisoLevel: 1,
             cubeTextureLoader: null,
             backgroundEnabled: true,
-            bkgrndSceneColorHex: 0xBBFFAD,
+            bkgrndSceneColorHex: 0x52704C,
             backgrounds: [],
             fog: null,
             fogEnabled: false,
-            fogColorHex: 0xefd1b5,
-            fogDensity: 0.0025,
+            fogColorHex: 0xE5DAD0,
+            fogDensity: 0.0050,
             //--- Lights
             hLight: null,
             hLightVisible: true,
             hLightPosition: {x: 0, y: 1, z: 0},
             hLightIntensity: 0.8,
-            groundColorHex: 0x806060,
+            groundColorHex: 0x808080,
             skyColorHex: 0xaaaaff,
             dLight: null,
             dLightIntensity: 0.8,
             dLightColorHex: 0xffffff,
             dLightVisible: true,
             dLightPosition: {x: 1, y: 1, z: 1},
+            dLightHelper: null,
+            dLightHelperVisible: false,
+            dLightHelperColorHex: 0xFF0000,
+            dLightHelperSize: 50,
+            hLightHelper: null,
+            hLightHelperVisible: false,
+            hLightHelperColorHex: 0xFF0000,
+            hLightHelperSize: 50,
             //--- Models loaders
             phongMaterialColorHex: 0x888888,
             modelVisible: true,
@@ -346,13 +386,8 @@ export default {
         this.display();
     },
     updated() {
-        this.updateRender();
-        this.updateScene();
-        this.updateModel();
-        this.setPostProcessing();
-        this.updateLight();
+        // Only DOM -> Using the VueJS's updated lifecycle method
         this.updateStats();
-
     },
     destroyed() {
         // this.cleanRenderer()
@@ -384,15 +419,16 @@ export default {
             // --- Lights
             this.hLight = new THREE.HemisphereLight(
                     new THREE.Color(this.skyColorHex),
-                    new THREE.Color(this.groundColorhex),
+                    new THREE.Color(this.groundColorHex),
                     this.hLightIntensity
             )
             this.dLight = new THREE.DirectionalLight(
                     new THREE.Color(this.dLightColorHex),
                     this.dLightIntensity
             )
-            this.setHemisphereLight();
-            this.setDirectionalLight();
+            this.dLightHelper = new THREE.DirectionalLightHelper(this.dLight, this.dLightHelperSize, this.dLightHelperColorHex);
+            this.hLightHelper = new THREE.HemisphereLightHelper(this.hLight, this.hLightHelperSize, this.hLightHelperColorHex);
+            this.setLights();
             //--- GUI
             this.stats = new Stats()
             this.setStats()
@@ -414,11 +450,12 @@ export default {
             this.stats.begin()
             this.render()
 
-            if ((this.rotationEnbaled) && this.model) {
-                // Just spinning
-                this.model.rotation.y += this.rotationStep;
-                this.wireframe.rotation.y += this.rotationStep;
-            }
+            // For each frame -> Updating the stuff
+            // We must use this way instead of VueJS's updated lifecycle method to avoid framerate issues
+            this.updateScene();
+            this.updateModel();
+            this.updateLight()
+            this.updatePostProcessing()
 
             this.stats.end()
         },
@@ -436,11 +473,12 @@ export default {
                 const gltfModel = gltf.scene
                 const mesh = gltfModel.children[0]
                 const material = mesh.material
-                // material.map.anisotropy = 16
 
+                // --- First setting of anisotropy
+                material.map.anisotropy = this.anisoLevel
                 this.model = new THREE.Mesh(mesh.geometry, material)
 
-                // We init and add Wireframe here because it depends of the mesh from gltfLoader
+                // --- We init and add Wireframe here because it depends of the mesh from gltfLoader
                 this.wireframe = new THREE.WireframeGeometry(mesh.geometry);
                 this.wireframeLines = new THREE.LineSegments(this.wireframe);
                 this.wireframeLines.material.depthTest = this.wireframeLinesParams.depthTest;
@@ -481,6 +519,10 @@ export default {
             this.renderer.gammaFactor = this.rendererParams.gammaFactor
         },
         setScene() {
+            // --- Name
+            this.scene.name = this.sceneName;
+
+            // --- Background
             // In order : posX, negX, posY, negY, posZ, negZ
             const background1 = this.cubeTextureLoader.load([
                 './assets/backgrounds/background1-posX.png',
@@ -490,21 +532,48 @@ export default {
                 './assets/backgrounds/background1-posZ.png',
                 './assets/backgrounds/background1-negZ.png',
             ]);
-
-
             this.backgrounds.push(background1);
-            this.scene.name = this.sceneName;
             this.scene.background = this.backgrounds[0];
+
+            // --- Fog
+            // We need to adapt the range of this input. The fog is not the same with a GLTF (Far model) and a STL (Close model)
+            //TODO: These modif here ?
+            if (this.format === 'STL') {
+                this.fogDensity = 0.0045
+                this.$refs.refInputFogDensity.min = 0.00002
+                this.$refs.refInputFogDensity.max = 0.015
+                this.$refs.refInputFogDensity.step = 0.00001
+            } else if (this.format === 'glTF') {
+                this.fogDensity = 0.00003
+                this.$refs.refInputFogDensity.min = 0.000002
+                this.$refs.refInputFogDensity.max = 0.0001
+                this.$refs.refInputFogDensity.step = 0.000001
+            }
         },
         setCamera() {
             this.camera.position.set(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
         },
-        setHemisphereLight() {
+        setLights() {
+            // --- Hemispheric
             this.hLight.position.set(this.hLightPosition.x, this.hLightPosition.y, this.hLightPosition.z)
             this.scene.add(this.hLight);
-        },
-        setDirectionalLight() {
+
+            // --- Directional
             this.dLight.position.set(this.dLight.position.x, this.dLight.position.y, this.dLight.position.z);
+
+            //TODO: Usefull ?
+            // this.dLight.castShadow = true;
+            // this.dLight.shadow.mapSize.width = 2048;
+            // this.dLight.shadow.mapSize.height = 2048;
+            //
+            // this.dLight.shadow.camera.left = -50;
+            // this.dLight.shadow.camera.right = 50;
+            // this.dLight.shadow.camera.top = 50;
+            // this.dLight.shadow.camera.bottom = -50;
+            //
+            // this.dLight.shadow.bias = - 0.0001;
+            // this.dLight.position.multiplyScalar( 30 );
+
             this.scene.add(this.dLight);
             this.scene.add(this.dLight.target);
         },
@@ -530,13 +599,13 @@ export default {
         },
         setPostProcessing() {
             //TODO: update postprocessing ? re-addPass ?
-            // --- ShaderPass (?), SAO, SSAA
-            this.ssaaRenderPass.unbiased = false;
-            this.ssaaRenderPass.enabled = this.ssaaRenderPassEnabled
-            this.saoPass.enabled = this.saoPassEnabled
-            this.saoPass.params = this.saoPassParams
-            this.filmPass.enabled = this.filmPassEnabled
-            this.filmPass.params = this.filmPassParams
+            // // --- ShaderPass (?), SAO, SSAA
+            // this.ssaaRenderPass.unbiased = false;
+            // this.ssaaRenderPass.enabled = this.ssaaRenderPassEnabled
+            // this.saoPass.enabled = this.saoPassEnabled
+            // this.saoPass.params = this.saoPassParams
+            // this.filmPass.enabled = this.filmPassEnabled
+            // this.filmPass.params = this.filmPassParams
             // --- Adding to the composer ---
             this.composer.addPass(this.renderPass);
             this.composer.addPass(this.filmPass);
@@ -551,24 +620,30 @@ export default {
             // this.composer.addPass(this.shaderPass);
         },
         setStats() {
-            // this.stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-
-            // TODO: don't use DOM
             this.stats.dom.style.position = 'absolute'
             this.stats.dom.style.right = 0
             this.stats.dom.style.left = 'unset'
+            // TODO: don't use DOM ?
             document.querySelector('#viewer').appendChild(this.stats.dom);
         },
         // ============ UPDATERS =====================
         updateModel() {
+            // --- Rotation
+            if ((this.rotationEnbaled) && this.model) {
+                // Just spinning
+                this.model.rotation.y += this.rotationStep;
+                this.wireframeLines.rotation.y += this.rotationStep;
+            }
+            // --- Model visibility
+            if (this.model) this.model.visible = this.modelVisible
             // --- Anisotropy
             this.scene.traverse((child) => {           // Way to modify an element already added to the scene
                 if (child instanceof THREE.Mesh && this.format === 'glTF') {
                     child.material.map.anisotropy = this.anisoLevel
                     this.model = child
+                    //TODO: That
                 }
             })
-            // })
             // --- Wireframe
             if (this.wireframeEnabled) {
                 this.scene.add(this.wireframeLines);
@@ -576,13 +651,12 @@ export default {
                 this.scene.remove(this.wireframeLines);
             }
         },
-        updateRender() {
-            // this.canvas.clientWidth = this.canvas.clientWidth      // Depends of the css
-            // this.canvas.clientHeight = this.canvas.clientHeight     // Depends of the css
-            // this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
-            this.render()
-        }
-        ,
+        // updateRender() {
+        //     // this.canvas.clientWidth = this.canvas.clientWidth      // Depends of the css
+        //     // this.canvas.clientHeight = this.canvas.clientHeight     // Depends of the css
+        //     // this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
+        //     this.render()
+        // },
         updateScene() {
             // --- Background
             if (this.backgroundEnabled) {
@@ -591,6 +665,7 @@ export default {
                 this.scene.background = new THREE.Color(this.bkgrndSceneColorHex);
             }
             // --- Fog
+            this.fog.density = this.fogDensity
             if (this.fogEnabled) {
                 this.scene.fog = this.fog
             } else {
@@ -598,6 +673,17 @@ export default {
             }
         }
         ,
+        updatePostProcessing() {
+            // --- SSAA
+            this.ssaaRenderPass.unbiased = false;
+            this.ssaaRenderPass.enabled = this.ssaaRenderPassEnabled
+            // --- SAO
+            this.saoPass.enabled = this.saoPassEnabled
+            this.saoPass.params = this.saoPassParams
+            // --- Film
+            this.filmPass.enabled = this.filmPassEnabled
+            this.filmPass.params = this.filmPassParams
+        },
         updateCamera(sizeToFitOnScreen, boxSize, boxCenter, camera) {
             const halfSizeToFitOnScreen = sizeToFitOnScreen * 0.5;
             const halfFovY = THREE.MathUtils.degToRad(camera.fov * .5);
@@ -621,12 +707,20 @@ export default {
         }
         ,
         updateLight() {
+            // --- Hemispheric
             this.dLight.visible = this.dLightVisible
             this.hLight.visible = this.hLightVisible
+            // --- Directional
             this.dLight.position.set(this.dLightPosition.x, this.dLightPosition.y, this.dLightPosition.z);
+            this.dLight.shadow.camera.far = this.cameraFar;
+            // --- Helpers
+            if (this.dLightVisible && this.dLightHelperVisible) this.scene.add(this.dLightHelper);
+            else this.scene.remove(this.dLightHelper);
+            if (this.hLightVisible && this.hLightHelperVisible) this.scene.add(this.hLightHelper);
+            else this.scene.remove(this.hLightHelper);
 
-        }
-        ,
+
+        },
         updateStats() {
             // const statsLeft = this.canvas.clientWidth - this.stats.dom.style.width + 'px'
             if (this.isFullscreen) {
@@ -658,7 +752,20 @@ export default {
         }
         ,
         toggleSubmenu(e) {
-            e.target.nextSibling.classList.toggle('submenuOpened')
+            const siblings = e.target.parentElement.childNodes
+            // eslint-disable-next-line no-console
+            console.log(siblings)
+            for (const sibling of siblings) {
+                // eslint-disable-next-line no-console
+                console.log(sibling)
+                if (sibling.classList.contains('submenu')) {
+                    sibling.classList.toggle('submenuOpened')
+                }
+
+                if (sibling.classList.contains('endSubmenu')) {
+                    sibling.classList.toggle('shown')
+                }
+            }
         }
         ,
         // ============ TOOLS ========================
@@ -722,10 +829,6 @@ export default {
     /*position: absolute;*/
 }
 
-.shown {
-    display: block;
-}
-
 /*______________ GUI submenus ______________*/
 .submenu {
     display: none;
@@ -735,10 +838,11 @@ export default {
 }
 
 .endSubmenu {
+    display: none;
     height: 4px;
     background-color: gray;
     width: 100%;
-    margin: 3px 0 3px 0;
+    margin: 4px 0 3px 0;
 }
 
 .submenuOpened {
@@ -750,12 +854,11 @@ export default {
 }
 
 /*______________ GUI items ______________*/
-.gui li {
+.gui .guiItem {
     list-style: none;
     display: flex;
     flex-direction: column;
-    margin: 0;
-    margin-bottom: 5px;
+    margin: 0 0 5px 0;
 }
 
 .gui .labelInput {
@@ -818,7 +921,7 @@ export default {
     line-height: 10px;
     background-color: gray;
     border: 0;
-    margin: 3px 0 3px 0;
+    margin: 6px 0 3px 0;
     cursor: pointer;
 }
 
@@ -828,7 +931,6 @@ export default {
     position: absolute;
     opacity: 0.5;
     background-color: #000000;
-    border-right: 1px solid white;
     z-index: 10000;
     width: 290px;
     height: 25px;
@@ -860,9 +962,16 @@ export default {
 }
 
 .btnTguiFullscreen {
+    border-bottom: 1px solid white;
     position: fixed;
     top: 0;
     left: 0;
+}
+
+/*______________ Flags ______________*/
+
+.shown {
+    display: block;
 }
 
 /*______________ Animations ______________*/
@@ -887,4 +996,15 @@ export default {
         height: 0;
     }
 }
+
+/*______________ Overrides to avoide weird behaviours ______________ (TODO: Fix it)*/
+
+/*___ In chunk-vendors.98565a43 :
+.content blockquote:not(:last-child), .content dl:not(:last-child), .content ol:not(:last-child), .content p:not(:last-child), .content pre:not(:last-child), .content table:not(:last-child), .content ul:not(:last-child) {
+    margin-bottom: 1em;
+}*/
+.gui, .submenu {
+    margin: 0 !important;
+}
+
 </style>
