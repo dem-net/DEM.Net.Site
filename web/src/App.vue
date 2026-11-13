@@ -129,6 +129,7 @@ const pages = [
         <RouterLink to="/about#support" class="inline-flex items-center gap-1.5 hover:text-ink">
           <Heart class="size-4 text-[#ea4aaa]" aria-hidden="true" /> Sponsor
         </RouterLink>
+        <RouterLink to="/privacy" class="hover:text-ink">Privacy</RouterLink>
         <span class="flex flex-wrap gap-1 sm:ml-auto">
           <a
             v-for="l in socialLinks"

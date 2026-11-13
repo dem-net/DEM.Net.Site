@@ -73,4 +73,8 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Bind API-supplied URLs to `href` through `safeUrl()` (`client.ts`), which allows only http(s): Vue doesn't block `javascript:` URLs.
   - The API's CORS allows any origin *without* credentials, so the SignalR connection uses `withCredentials: false`.
   - The backend (`/Users/xfischer/Repos/DEM.Net.WebAPI`) throttles generation and exports per client IP (1 per 5 s, 1 running at a time by default); a second request gets HTTP 429 with `Retry-After`. Size estimates aren't throttled.
+- **Analytics**: the self-hosted cookieless tracker (`https://m.elevationapi.com/script.js`, from the `add-analytics` skill in `~/Repos/analytics`) is loaded in `index.html` with `data-spa`.
+  - No `data-404`: `404.html` is a copy of `index.html` and serves every deep link, so every deep-link visit would be counted as "not found".
+  - The CSP allows `m.elevationapi.com` in `script-src` and `connect-src`. `/privacy` (`PrivacyPage.vue`) holds the legal text and the `data-analytics-optout` button.
+  - Its consent exemption forbids any other analytics, tracking script, cookie or identifier. Storage is limited to the existing functional entries (basemap and panel width in localStorage, OAuth nonce in sessionStorage), which are disclosed on `/privacy`; update that page if this changes.
 - **GitHub Pages SPA routing**: the build copies `index.html` to `404.html` (a plugin in `vite.config.ts`), so deep links load the app.

@@ -24,6 +24,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/expo', name: 'expo', component: () => import('./pages/ExpoPage.vue'), meta: { title: 'Expo' } },
   { path: '/faq', name: 'faq', component: () => import('./pages/FaqPage.vue'), meta: { title: 'FAQ' } },
   { path: '/about', name: 'about', component: () => import('./pages/AboutPage.vue'), meta: { title: 'About' } },
+  { path: '/privacy', name: 'privacy', component: () => import('./pages/PrivacyPage.vue'), meta: { title: 'Privacy' } },
   // Registered as the OAuth redirect URI on Sketchfab: the path must not change.
   {
     path: '/sketchfab_oauth2',
