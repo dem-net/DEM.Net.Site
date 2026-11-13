@@ -1,26 +1,65 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Crosshair, Scan, Trash2 } from '@lucide/vue'
-import { api } from '@/api/client'
+import { api, bboxToPath } from '@/api/client'
 import AddressSearch from '@/components/map/AddressSearch.vue'
 import BaseMap from '@/components/map/BaseMap.vue'
 import GenerateBlock from '@/components/GenerateBlock.vue'
 import SizeGauge from '@/components/SizeGauge.vue'
 import ModelOptionsForm from '@/components/ModelOptionsForm.vue'
 import ModelResultOverlay from '@/components/ModelResultOverlay.vue'
+import ShareButton from '@/components/ShareButton.vue'
 import StepBlock from '@/components/StepBlock.vue'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ToolLayout from '@/components/ToolLayout.vue'
 import { useAreaPicker } from '@/composables/useAreaPicker'
+import { DEFAULT_DATASET, DEFAULT_IMAGERY, useCatalog } from '@/composables/useCatalog'
+import { mapStateFromQuery, mapStateToQuery, optionsFromQuery, optionsToQuery, SHARE_KEYS } from '@/composables/shareLink'
 import { useGenerate } from '@/composables/useGenerate'
 import { useModelOptions, useOsmOptions } from '@/composables/useModelOptions'
 import { useSizeEstimate } from '@/composables/useSizeEstimate'
 import { useCountry } from '@/composables/region'
 
 const route = useRoute()
-const area = useAreaPicker()
-const options = useModelOptions()
+const router = useRouter()
+
+// A share link restores the map view, basemap, relief and model options (the area comes from ?bbox=).
+const sharedMap = mapStateFromQuery(route.query)
+const area = useAreaPicker({ fitOnLoad: !sharedMap.view })
+const options = useModelOptions(optionsFromQuery(route.query))
+const baseMap = ref<InstanceType<typeof BaseMap>>()
+
+// Names from a link are only trusted once the catalog confirms them.
+const catalog = useCatalog()
+watch(
+  catalog.loaded,
+  (loaded) => {
+    if (!loaded) return
+    if (!catalog.datasetByName(options.dataset)) options.dataset = DEFAULT_DATASET
+    if (!catalog.imageryByName(options.imageryProvider)) options.imageryProvider = DEFAULT_IMAGERY
+  },
+  { immediate: true },
+)
+
+// Once applied, drop the share parameters from the address bar: they'd be stale after the next change.
+onMounted(() => {
+  if (!SHARE_KEYS.some((k) => k in route.query)) return
+  const query = { ...route.query }
+  for (const k of SHARE_KEYS) delete query[k]
+  router.replace({ query })
+})
+
+function shareUrl(): string {
+  const state = baseMap.value?.getState()
+  const query = {
+    ...(area.bbox.value && { bbox: bboxToPath(area.bbox.value) }),
+    ...(withOsm.value && { osm: '1' }),
+    ...(state && mapStateToQuery(state)),
+    ...optionsToQuery(options),
+  }
+  return new URL(router.resolve({ path: route.path, query }).href, location.origin).href
+}
 const osm = useOsmOptions()
 /** OSM features (buildings, ski pistes) are temporarily disabled. Set to true to bring them back. */
 const OSM_AVAILABLE = false
@@ -60,6 +99,9 @@ async function generate() {
 
 <template>
   <ToolLayout title="Map to 3D" subtitle="Turn any area on Earth into a 3D terrain model.">
+    <template #actions>
+      <ShareButton :get-url="shareUrl" title="Map to 3D · Elevation API" />
+    </template>
     <template #panel>
       <StepBlock :n="1" title="Choose an area" :done="!!area.bbox.value">
         <div class="grid grid-cols-2 gap-2">
@@ -137,7 +179,7 @@ async function generate() {
     </template>
 
     <template #map>
-      <BaseMap @ready="area.onReady">
+      <BaseMap ref="baseMap" :initial="sharedMap" @ready="area.onReady">
         <template #search><AddressSearch /></template>
       </BaseMap>
       <ModelResultOverlay v-if="showResult && gen.result.value" :result="gen.result.value" @close="showResult = false" />

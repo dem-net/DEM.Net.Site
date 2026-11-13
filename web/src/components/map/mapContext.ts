@@ -2,6 +2,23 @@ import type { Map as MlMap } from 'maplibre-gl'
 import { inject, provide, shallowRef, watch, type InjectionKey, type ShallowRef } from 'vue'
 import type { BBox } from '@/api/types'
 
+export type Basemap = 'streets' | 'topo'
+
+/** Camera position, as stored in share links. */
+export interface MapView {
+  center: [number, number]
+  zoom: number
+  bearing: number
+  pitch: number
+}
+
+/** What BaseMap can report for a share link: the camera, the basemap and whether 3D relief is on. */
+export interface MapState {
+  view: MapView
+  basemap: Basemap
+  relief: boolean
+}
+
 const MAP_KEY: InjectionKey<ShallowRef<MlMap | null>> = Symbol('map')
 
 export function provideMap() {

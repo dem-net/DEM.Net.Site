@@ -2,18 +2,18 @@ import { reactive } from 'vue'
 import type { ModelOptions, OsmOptions } from '@/api/types'
 import { DEFAULT_DATASET, DEFAULT_IMAGERY } from './useCatalog'
 
+export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
+  dataset: DEFAULT_DATASET,
+  format: 'glTF',
+  textured: true,
+  imageryProvider: DEFAULT_IMAGERY,
+  textureQuality: 2,
+  zFactor: 1,
+  meshDetail: 50,
+})
+
 export function useModelOptions(overrides: Partial<ModelOptions> = {}) {
-  return reactive<ModelOptions>({
-    dataset: DEFAULT_DATASET,
-    format: 'glTF',
-    textured: true,
-    imageryProvider: DEFAULT_IMAGERY,
-    textureQuality: 2,
-    zFactor: 1,
-    generateTIN: false,
-    meshDetail: 50,
-    ...overrides,
-  })
+  return reactive<ModelOptions>({ ...MODEL_DEFAULTS, ...overrides })
 }
 
 export function useOsmOptions() {

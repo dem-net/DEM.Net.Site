@@ -53,6 +53,10 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Tool pages use `ToolLayout` (a side panel with a sticky footer for the primary action, and the map).
   - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
   - The selected area is stored in `?bbox=`.
+  - **Share links** (Map to 3D, `ShareButton.vue`) add the map view, basemap, 3D relief and the non-default model options to the URL (`src/composables/shareLink.ts`).
+    - Values from a link are validated, and dataset and imagery names are checked against the catalog.
+    - The share parameters are removed from the address bar once applied, so only `?bbox=` stays live.
+    - New model options must be added to `optionsToQuery`/`optionsFromQuery`, or shared links will silently drop them.
   - Old URLs (`/playground_*`) redirect in `src/router.ts`.
   - `/sketchfab_oauth2` is the OAuth redirect URI registered with Sketchfab, so the path must not change. It reads `access_token` and `state` from the URL hash and then removes them. `state` is a CSRF nonce, not the model id: `beginSketchfabLogin()` (`src/api/sketchfabAuth.ts`) stores `{nonce, modelId}` in `sessionStorage`, and the callback refuses a token whose `state` doesn't match.
 - **3D preview**:

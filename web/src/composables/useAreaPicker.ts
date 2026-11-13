@@ -15,8 +15,11 @@ export function parseBBoxParam(v: unknown): BBox | null {
   return { west, east, south, north }
 }
 
-/** Rectangle picking for the bbox tools; the area is mirrored in `?bbox=w,e,s,n` so links are shareable. */
-export function useAreaPicker() {
+/**
+ * Rectangle picking for the bbox tools; the area is mirrored in `?bbox=w,e,s,n` so links are shareable.
+ * `fitOnLoad: false` keeps the map's own initial view (e.g. one from a share link) instead of zooming to the area.
+ */
+export function useAreaPicker({ fitOnLoad = true }: { fitOnLoad?: boolean } = {}) {
   const route = useRoute()
   const router = useRouter()
   const bbox = ref<BBox | null>(parseBBoxParam(route.query.bbox))
@@ -41,7 +44,7 @@ export function useAreaPicker() {
     drawing.value = false
     if (bbox.value) {
       draw.setShape(bboxToFeature(bbox.value))
-      fitBBox(m, bbox.value)
+      if (fitOnLoad) fitBBox(m, bbox.value)
     }
   }
 
