@@ -16,8 +16,16 @@ const failed = ref(false)
 const autoRotate = ref(true)
 const el = ref<HTMLElement>()
 
+/**
+ * Default look, after the Sketchfab terrain setup: SSAO for relief, a light sharpen pass,
+ * ground shadow, matte terrain (metallic 0, Specular F0 0, see matteTerrain.ts).
+ * Touch devices get the cheaper render mode (SSAO's normal pass is costly on mobile GPUs).
+ */
+const renderMode = isTouch ? 'performance' : 'quality'
+
 onMounted(async () => {
   await import('@google/model-viewer')
+  await Promise.all([import('@google/model-viewer-effects'), import('./sharpenEffect')])
   ready.value = true
 })
 
@@ -33,6 +41,12 @@ watch(
 
 function onProgress(e: Event) {
   progress.value = (e as CustomEvent<{ totalProgress: number }>).detail.totalProgress
+}
+
+async function onLoad() {
+  loaded.value = true
+  const { makeTerrainMatte } = await import('./matteTerrain')
+  if (el.value) makeTerrainMatte(el.value)
 }
 
 const pct = computed(() => Math.round(progress.value * 100))
@@ -69,16 +83,22 @@ function fullscreen() {
         rotation-per-second="12deg"
         interaction-prompt="none"
         camera-orbit="-25deg 58deg auto"
-        shadow-intensity="0.6"
+        shadow-intensity="1"
+        shadow-softness="0.6"
         exposure="0.9"
         tone-mapping="neutral"
         environment-image="neutral"
         max-camera-orbit="auto 88deg auto"
         style="width: 100%; height: 100%; background: transparent; --poster-color: transparent"
         @progress="onProgress"
-        @load="loaded = true"
+        @load="onLoad"
         @error="failed = true"
-      />
+      >
+        <effect-composer :render-mode="renderMode" msaa="4">
+          <ssao-effect strength="1.5" />
+          <sharpen-effect amount="0.3" />
+        </effect-composer>
+      </model-viewer>
       <div v-if="!loaded && !failed" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2">
         <LoaderCircle class="size-6 animate-spin text-accent" />
         <span class="text-xs text-ink-2">Loading model · {{ pct }}% of {{ sizeMB.toFixed(1) }} MB</span>

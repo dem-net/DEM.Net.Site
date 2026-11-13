@@ -69,7 +69,8 @@ export default defineConfig(({ mode }) => ({
       include: [/\.vue$/, /\.md$/],
       template: {
         compilerOptions: {
-          isCustomElement: (tag) => tag === 'model-viewer',
+          isCustomElement: (tag) =>
+            ['model-viewer', 'effect-composer', 'ssao-effect', 'sharpen-effect'].includes(tag),
         },
       },
     }),
