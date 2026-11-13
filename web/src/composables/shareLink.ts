@@ -8,12 +8,12 @@ import { MODEL_DEFAULTS } from './useModelOptions'
  *   map=lon,lat,zoom[,bearing,pitch]   camera
  *   basemap=topo|streets               basemap
  *   relief=1                           3D relief on
- *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail   model options that differ from the defaults
+ *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, adornments=0   model options that differ from the defaults
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
  */
 
 /** Query keys owned by share links (removed from the address bar once applied). */
-export const SHARE_KEYS = ['map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail'] as const
+export const SHARE_KEYS = ['map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'adornments'] as const
 
 type Query = Record<string, string>
 
@@ -68,6 +68,7 @@ export function optionsToQuery(o: ModelOptions): Query {
   if (o.textureQuality !== d.textureQuality) q.quality = String(o.textureQuality)
   if (o.zFactor !== d.zFactor) q.z = String(o.zFactor)
   if (o.meshDetail !== d.meshDetail) q.detail = String(o.meshDetail)
+  if (o.adornments !== d.adornments) q.adornments = o.adornments ? '1' : '0'
   return q
 }
 
@@ -91,5 +92,7 @@ export function optionsFromQuery(q: LocationQuery): Partial<ModelOptions> {
   if (first(q, 'z') && Number.isFinite(z) && z >= 1 && z <= 10) o.zFactor = Math.round(z * 2) / 2 // the slider's 0.5 steps
   const detail = Number(first(q, 'detail'))
   if (first(q, 'detail') && Number.isInteger(detail) && detail >= 10 && detail <= 100) o.meshDetail = detail
+  const adornments = first(q, 'adornments')
+  if (adornments === '0' || adornments === '1') o.adornments = adornments === '1'
   return o
 }

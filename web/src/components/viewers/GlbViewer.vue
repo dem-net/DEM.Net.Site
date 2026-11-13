@@ -16,16 +16,10 @@ const failed = ref(false)
 const autoRotate = ref(true)
 const el = ref<HTMLElement>()
 
-/**
- * Default look, after the Sketchfab terrain setup: SSAO for relief, a light sharpen pass,
- * ground shadow, matte terrain (metallic 0, Specular F0 0, see matteTerrain.ts).
- * Touch devices get the cheaper render mode (SSAO's normal pass is costly on mobile GPUs).
- */
-const renderMode = isTouch ? 'performance' : 'quality'
-
+// No post-processing (SSAO, sharpen…): it was tried and dropped as too risky for browser stability.
+// Terrain is made matte on load instead (metallic 0, Specular F0 0, see matteTerrain.ts).
 onMounted(async () => {
   await import('@google/model-viewer')
-  await Promise.all([import('@google/model-viewer-effects'), import('./sharpenEffect')])
   ready.value = true
 })
 
@@ -93,12 +87,7 @@ function fullscreen() {
         @progress="onProgress"
         @load="onLoad"
         @error="failed = true"
-      >
-        <effect-composer :render-mode="renderMode" msaa="4">
-          <ssao-effect strength="1.5" />
-          <sharpen-effect amount="0.3" />
-        </effect-composer>
-      </model-viewer>
+      />
       <div v-if="!loaded && !failed" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2">
         <LoaderCircle class="size-6 animate-spin text-accent" />
         <span class="text-xs text-ink-2">Loading model · {{ pct }}% of {{ sizeMB.toFixed(1) }} MB</span>

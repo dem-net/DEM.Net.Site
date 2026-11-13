@@ -124,6 +124,12 @@ const formats = computed(() => [
           <label class="field-label" for="zfactor">Vertical exaggeration · ×{{ options.zFactor }}</label>
           <input id="zfactor" v-model.number="options.zFactor" type="range" min="1" max="10" step="0.5" class="w-full accent-[var(--c-accent)]" />
         </div>
+        <ToggleSwitch
+          v-if="isGltf"
+          v-model="options.adornments"
+          label="Scale bar & north arrow"
+          hint="Add a 3D scale bar and a north arrow next to the terrain"
+        />
       </div>
     </div>
   </div>

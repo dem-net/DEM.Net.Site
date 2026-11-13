@@ -82,6 +82,8 @@ export interface ModelOptions {
   zFactor: number
   /** Percentage of mesh triangles to keep, 10–100 (sent as meshReduceFactor = meshDetail / 100). */
   meshDetail: number
+  /** 3D scale bar and north arrow next to the terrain (glTF only; the API's default is true). */
+  adornments: boolean
 }
 
 /** Server-side size estimate (`onlyEstimateSize=true`). Approximate: actual files can differ by 2–3×. */

@@ -11,6 +11,7 @@ const opts: ModelOptions = {
   textureQuality: 3,
   zFactor: 1.5,
   meshDetail: 50,
+  adornments: true,
 }
 
 describe('bbox', () => {
@@ -49,8 +50,15 @@ describe('terrainModelPath', () => {
       format: 'glTF',
       zFactor: '1.5',
       meshReduceFactor: '0.5',
+      adornments: 'true',
       clientConnectionId: 'abc',
     })
+  })
+
+  it('sends adornments=false when turned off, and never for STL', () => {
+    const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('adornments')
+    expect(q({ ...opts, adornments: false })).toBe('false')
+    expect(q({ ...opts, format: 'STL' })).toBe('false')
   })
 
   it('switches to the OSM endpoint and maps OSM flags', () => {
