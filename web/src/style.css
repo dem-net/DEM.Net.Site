@@ -1,0 +1,167 @@
+@import 'tailwindcss';
+
+/* Light palette; dark overrides below follow the OS setting. */
+:root {
+  --c-page: #f6f5f2;
+  --c-surface: #ffffff;
+  --c-subtle: #efede8;
+  --c-line: #dedad2;
+  --c-ink: #1c1d1f;
+  --c-ink-2: #45474c;
+  --c-ink-3: #75777d;
+  --c-accent: #2f6f4f;
+  --c-accent-soft: #e2efe7;
+  --c-on-accent: #ffffff;
+  --c-danger: #b42318;
+  --c-danger-soft: #fdecea;
+  --c-warn: #b45309;
+  --c-warn-soft: #fef3e2;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-page: #131416;
+    --c-surface: #1c1d20;
+    --c-subtle: #26282c;
+    --c-line: #34363b;
+    --c-ink: #ecebe7;
+    --c-ink-2: #c3c2bd;
+    --c-ink-3: #8f9095;
+    --c-accent: #6cc095;
+    --c-accent-soft: #1f3a2c;
+    --c-on-accent: #0d1f16;
+    --c-danger: #f97066;
+    --c-danger-soft: #3a1d1b;
+    --c-warn: #f5a524;
+    --c-warn-soft: #3a2a12;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-page: var(--c-page);
+  --color-surface: var(--c-surface);
+  --color-subtle: var(--c-subtle);
+  --color-line: var(--c-line);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-accent: var(--c-accent);
+  --color-accent-soft: var(--c-accent-soft);
+  --color-on-accent: var(--c-on-accent);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-warn: var(--c-warn);
+  --color-warn-soft: var(--c-warn-soft);
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #app {
+    height: 100%;
+  }
+  body {
+    @apply bg-page font-sans text-ink antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  /* Use as class="btn btn-primary" / class="btn btn-secondary" */
+  .btn-primary {
+    @apply bg-accent text-on-accent hover:brightness-110;
+  }
+  .btn-secondary {
+    @apply border border-line bg-surface text-ink hover:bg-subtle;
+  }
+  .field-label {
+    @apply mb-1.5 block text-xs font-semibold tracking-wide text-ink-2 uppercase;
+  }
+  .input {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-accent;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-surface;
+  }
+
+  /* Markdown content (FAQ) */
+  .prose {
+    @apply max-w-none text-[15px] leading-relaxed text-ink-2;
+  }
+  .prose h1 {
+    @apply mb-4 text-3xl font-semibold text-ink;
+  }
+  .prose h2 {
+    @apply mt-10 mb-3 text-xl font-semibold text-ink;
+  }
+  .prose h3 {
+    @apply mt-6 mb-2 font-semibold text-ink;
+  }
+  .prose p,
+  .prose ul,
+  .prose ol,
+  .prose blockquote {
+    @apply my-3;
+  }
+  .prose ul {
+    @apply list-disc pl-6;
+  }
+  .prose ol {
+    @apply list-decimal pl-6;
+  }
+  .prose a {
+    @apply break-words text-accent underline underline-offset-2;
+  }
+  .prose blockquote {
+    @apply border-l-4 border-line pl-4 text-ink-3;
+  }
+  .prose code {
+    @apply rounded bg-subtle px-1 py-0.5 text-[13px];
+  }
+  .prose pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-subtle p-4 text-[13px];
+  }
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  .prose img {
+    @apply my-4 rounded-lg;
+  }
+  .prose table {
+    @apply my-4 block w-full overflow-x-auto text-sm;
+  }
+  .prose th {
+    @apply border-b border-line px-3 py-2 text-left font-semibold text-ink;
+  }
+  .prose td {
+    @apply border-b border-line px-3 py-2 align-top;
+  }
+}
+
+/* MapLibre controls follow the theme */
+.maplibregl-ctrl-group,
+.maplibregl-ctrl-attrib {
+  background: var(--c-surface) !important;
+  color: var(--c-ink-2);
+}
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib-inner,
+.maplibregl-ctrl-attrib a {
+  color: var(--c-ink-2) !important;
+}
+.maplibregl-ctrl-attrib-button {
+  background-color: var(--c-surface) !important;
+}
+@media (prefers-color-scheme: dark) {
+  .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+    filter: invert(1);
+  }
+}
