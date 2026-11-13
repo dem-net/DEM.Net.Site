@@ -10,7 +10,6 @@ export function useModelOptions(overrides: Partial<ModelOptions> = {}) {
     imageryProvider: DEFAULT_IMAGERY,
     textureQuality: 2,
     zFactor: 1,
-    generateTIN: false,
     meshDetail: 50,
     ...overrides,
   })

@@ -10,7 +10,6 @@ const opts: ModelOptions = {
   imageryProvider: 'MapBox-SatelliteStreet',
   textureQuality: 3,
   zFactor: 1.5,
-  generateTIN: false,
   meshDetail: 50,
 }
 
@@ -44,7 +43,6 @@ describe('terrainModelPath', () => {
     expect(url.pathname).toBe('/api/model/3d/bbox/6.75,7.05,45.75,45.95')
     expect(Object.fromEntries(url.searchParams)).toEqual({
       dataset: 'AW3D30',
-      generateTIN: 'false',
       textured: 'true',
       imageryProvider: 'MapBox-SatelliteStreet',
       textureQuality: '3',
@@ -78,10 +76,10 @@ describe('terrainModelPath', () => {
     expect(q.clientConnectionId).toBeUndefined()
   })
 
-  it('never asks for texture or TIN with STL', () => {
-    const url = new URL(terrainModelPath(bbox, { ...opts, format: 'STL', generateTIN: true }, null, null), 'https://x')
+  it('never asks for texture with STL, nor for a TIN', () => {
+    const url = new URL(terrainModelPath(bbox, { ...opts, format: 'STL' }, null, null), 'https://x')
     expect(url.searchParams.get('textured')).toBe('false')
-    expect(url.searchParams.get('generateTIN')).toBe('false')
+    expect(url.searchParams.has('generateTIN')).toBe(false)
   })
 })
 

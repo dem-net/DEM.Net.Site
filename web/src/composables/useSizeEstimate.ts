@@ -28,7 +28,7 @@ export function detailToFit(minDetailMB: number, fullDetailMB: number, maxMB: nu
 /** Fields that change the generated file size (zFactor does not). */
 function sizeKey(i: EstimateInput) {
   const o = i.options
-  return JSON.stringify([i.bbox, o.dataset, o.format, o.textured, o.imageryProvider, o.textureQuality, o.generateTIN, o.meshDetail, i.osm])
+  return JSON.stringify([i.bbox, o.dataset, o.format, o.textured, o.imageryProvider, o.textureQuality, o.meshDetail, i.osm])
 }
 
 /** Live, debounced server-side size estimate for a terrain model request. */

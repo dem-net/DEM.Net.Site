@@ -98,7 +98,6 @@ export function toModelResult(info: AssetInfo, format: ModelOptions['format']): 
 function modelQuery(o: ModelOptions, connectionId: string | null) {
   return {
     dataset: o.dataset,
-    generateTIN: o.format === 'glTF' && o.generateTIN,
     textured: o.format === 'glTF' && o.textured,
     imageryProvider: o.imageryProvider,
     textureQuality: o.textureQuality,

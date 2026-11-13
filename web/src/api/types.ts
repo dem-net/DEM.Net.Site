@@ -80,7 +80,6 @@ export interface ModelOptions {
   imageryProvider: string
   textureQuality: 1 | 2 | 3
   zFactor: number
-  generateTIN: boolean
   /** Percentage of mesh triangles to keep, 10–100 (sent as meshReduceFactor = meshDetail / 100). */
   meshDetail: number
 }
