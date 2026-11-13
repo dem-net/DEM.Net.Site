@@ -93,9 +93,13 @@ onBeforeUnmount(stopDrag)
       :style="panelStyle"
       class="@container relative order-2 flex max-h-[55dvh] min-h-0 flex-col border-t border-line bg-surface md:order-1 md:max-h-none md:w-(--panel-w) md:shrink-0 md:border-t-0 md:border-r"
     >
-      <div class="border-b border-line px-5 pt-4 pb-3">
-        <h1 class="text-lg font-semibold tracking-tight">{{ title }}</h1>
-        <p v-if="subtitle" class="mt-0.5 text-sm text-ink-3">{{ subtitle }}</p>
+      <div class="flex items-start gap-3 border-b border-line px-5 pt-4 pb-3">
+        <div class="min-w-0 flex-1">
+          <h1 class="text-lg font-semibold tracking-tight">{{ title }}</h1>
+          <p v-if="subtitle" class="mt-0.5 text-sm text-ink-3">{{ subtitle }}</p>
+        </div>
+        <!-- Page actions next to the title (e.g. Share) -->
+        <slot name="actions" />
       </div>
       <div
         class="min-h-0 flex-1 overflow-y-auto px-5 py-4"

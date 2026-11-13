@@ -8,18 +8,18 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 setWorkerUrl(workerUrl)
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { Layers, Mountain } from '@lucide/vue'
-import { provideMap } from './mapContext'
+import { provideMap, type Basemap, type MapState, type MapView } from './mapContext'
 
 const props = withDefaults(
   defineProps<{
     center?: [number, number]
     zoom?: number
+    /** Initial state from a share link; each part overrides the default (or the saved basemap). */
+    initial?: Partial<MapState>
   }>(),
-  { center: () => [6.87, 45.92], zoom: 9 },
+  { center: () => [6.87, 45.92], zoom: 9, initial: () => ({}) },
 )
 const emit = defineEmits<{ ready: [map: MlMap] }>()
-
-type Basemap = 'streets' | 'topo'
 
 const STREETS_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 const DEM_SOURCE = 'dem'
@@ -27,7 +27,7 @@ const TOPO = 'opentopomap'
 
 const container = ref<HTMLDivElement>()
 const map = provideMap()
-const basemap = ref<Basemap>(readPref('basemap', 'topo') as Basemap)
+const basemap = ref<Basemap>(props.initial.basemap ?? (readPref('basemap', 'topo') as Basemap))
 const terrain3d = ref(false)
 
 function readPref(key: string, fallback: string) {
@@ -86,12 +86,17 @@ function applyBasemap(m: MlMap, b: Basemap) {
   m.setLayoutProperty('hillshade', 'visibility', b === 'streets' ? 'visible' : 'none')
 }
 
+const TERRAIN = { source: DEM_SOURCE, exaggeration: 1.3 }
+
 onMounted(() => {
+  const view: MapView = props.initial.view ?? { center: props.center, zoom: props.zoom, bearing: 0, pitch: 0 }
   const m = new MlMap({
     container: container.value!,
     style: STREETS_STYLE,
-    center: props.center,
-    zoom: props.zoom,
+    center: view.center,
+    zoom: view.zoom,
+    bearing: view.bearing,
+    pitch: view.pitch,
     attributionControl: { compact: true },
     maxPitch: 75,
   })
@@ -101,6 +106,11 @@ onMounted(() => {
   m.once('load', () => {
     addExtraLayers(m)
     applyBasemap(m, basemap.value)
+    if (props.initial.relief) {
+      // Applied directly so the shared pitch is kept (the toggle's watcher would tilt to 60°).
+      m.setTerrain(TERRAIN)
+      terrain3d.value = true
+    }
     // Compact attribution starts expanded; on small screens it covers the map, so start collapsed.
     if (m.getContainer().clientWidth < 640) {
       m.getContainer().querySelector('.maplibregl-compact-show')?.classList.remove('maplibregl-compact-show')
@@ -117,15 +127,28 @@ watch(basemap, (b) => {
 
 watch(terrain3d, (on) => {
   const m = map.value
-  if (!m) return
+  if (!m || on === !!m.getTerrain()) return
   if (on) {
-    m.setTerrain({ source: DEM_SOURCE, exaggeration: 1.3 })
+    m.setTerrain(TERRAIN)
     if (m.getPitch() < 30) m.easeTo({ pitch: 60, duration: 800 })
   } else {
     m.setTerrain(null)
     m.easeTo({ pitch: 0, duration: 600 })
   }
 })
+
+/** Current camera, basemap and relief, for share links. Null until the map has loaded. */
+function getState(): MapState | null {
+  const m = map.value
+  if (!m) return null
+  const c = m.getCenter()
+  return {
+    view: { center: [c.lng, c.lat], zoom: m.getZoom(), bearing: m.getBearing(), pitch: m.getPitch() },
+    basemap: basemap.value,
+    relief: terrain3d.value,
+  }
+}
+defineExpose({ getState })
 
 // onUnmounted (not onBeforeUnmount): children such as drawing tools detach from the map first.
 onUnmounted(() => {
