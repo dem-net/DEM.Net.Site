@@ -75,6 +75,38 @@ const formats = computed(() => [
           <option v-for="p in imagery" :key="p.name" :value="p.name">{{ p.attribution?.text || p.name }}</option>
         </select>
       </div>
+      <div v-if="options.textured">
+        <label class="field-label" for="quality">Texture quality</label>
+        <input
+          id="quality"
+          v-model.number="options.textureQuality"
+          type="range"
+          min="1"
+          max="3"
+          step="1"
+          class="w-full accent-[var(--c-accent)]"
+          :aria-valuetext="qualityLabels[options.textureQuality]"
+          aria-describedby="quality-hint"
+        />
+        <!-- Tick labels under the slider, as in the previous site; clicking one selects it. -->
+        <div class="mt-0.5 grid grid-cols-3 text-xs" aria-hidden="true">
+          <button
+            v-for="q in ([1, 2, 3] as const)"
+            :key="q"
+            type="button"
+            tabindex="-1"
+            class="hover:text-ink"
+            :class="[
+              q === 1 ? 'text-left' : q === 2 ? 'text-center' : 'text-right',
+              options.textureQuality === q ? 'font-medium text-ink' : 'text-ink-3',
+            ]"
+            @click="options.textureQuality = q"
+          >
+            {{ qualityLabels[q] }}
+          </button>
+        </div>
+        <p id="quality-hint" class="mt-1 text-xs text-ink-3">Higher quality means sharper imagery, bigger files and longer generation.</p>
+      </div>
     </template>
 
     <div>
@@ -91,19 +123,6 @@ const formats = computed(() => [
         <div>
           <label class="field-label" for="zfactor">Vertical exaggeration · ×{{ options.zFactor }}</label>
           <input id="zfactor" v-model.number="options.zFactor" type="range" min="1" max="10" step="0.5" class="w-full accent-[var(--c-accent)]" />
-        </div>
-        <div v-if="isGltf && options.textured">
-          <label class="field-label" for="quality">Texture quality · {{ qualityLabels[options.textureQuality] }}</label>
-          <input
-            id="quality"
-            v-model.number="options.textureQuality"
-            type="range"
-            min="1"
-            max="3"
-            step="1"
-            class="w-full accent-[var(--c-accent)]"
-          />
-          <p class="mt-1 text-xs text-ink-3">Higher quality means bigger files and longer generation.</p>
         </div>
         <ToggleSwitch
           v-if="isGltf"
