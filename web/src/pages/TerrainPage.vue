@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Crosshair, Scan, Trash2 } from '@lucide/vue'
 import { api, bboxToPath } from '@/api/client'
@@ -88,17 +88,28 @@ const disabledReason = computed(() => {
   return undefined
 })
 
+const layout = ref<InstanceType<typeof ToolLayout>>()
+
 async function generate() {
   const b = area.bbox.value
   if (!b) return
   showResult.value = false
-  await gen.run((id, signal) => api.terrainModel(b, options, withOsm.value ? osm : null, id, signal))
-  if (gen.result.value) showResult.value = true
+  const done = gen.run((id, signal) => api.terrainModel(b, options, withOsm.value ? osm : null, id, signal))
+  // On mobile the footer scrolls with the options: show the progress, then the model.
+  await nextTick()
+  layout.value?.scrollToFooter()
+  await done
+  if (gen.result.value) showModel()
+}
+
+function showModel() {
+  showResult.value = true
+  layout.value?.scrollToTop()
 }
 </script>
 
 <template>
-  <ToolLayout title="Map to 3D" subtitle="Turn any area on Earth into a 3D terrain model.">
+  <ToolLayout ref="layout" title="Map to 3D" subtitle="Turn any area on Earth into a 3D terrain model.">
     <template #actions>
       <ShareButton :get-url="shareUrl" title="Map to 3D · Elevation API" />
     </template>
@@ -174,7 +185,7 @@ async function generate() {
           :has-result="!!gen.result.value && !showResult"
           @generate="generate"
           @cancel="gen.cancel()"
-          @show="showResult = true"
+          @show="showModel"
         />
     </template>
 
