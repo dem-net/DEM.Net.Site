@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { safeUrl } from '@/api/client'
 import { useCatalog } from '@/composables/useCatalog'
 
 const model = defineModel<string>({ required: true })
@@ -18,7 +19,7 @@ const selected = computed(() => datasetByName(model.value))
     </select>
     <p v-if="selected" class="mt-1 text-xs text-ink-3">
       {{ selected.description }}
-      <a v-if="selected.publicUrl" :href="selected.publicUrl" target="_blank" rel="noopener noreferrer" class="underline">Source</a>
+      <a v-if="safeUrl(selected.publicUrl)" :href="safeUrl(selected.publicUrl)" target="_blank" rel="noopener noreferrer" class="underline">Source</a>
     </p>
   </div>
 </template>

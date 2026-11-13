@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { safeUrl } from '@/api/client'
 import BrandIcon from '@/components/BrandIcon.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 import { useCatalog } from '@/composables/useCatalog'
@@ -89,7 +90,7 @@ const { datasets, imagery, loaded } = useCatalog()
           <p class="mt-2 text-sm text-ink-2">{{ d.description }}</p>
           <p class="mt-2 text-sm">
             Source:
-            <a :href="d.attribution.url" target="_blank" rel="noopener noreferrer" class="text-accent underline">{{ d.attribution.text }}</a>
+            <a :href="safeUrl(d.attribution.url)" target="_blank" rel="noopener noreferrer" class="text-accent underline">{{ d.attribution.text }}</a>
           </p>
           <p v-if="d.attribution.acknowledgement" class="mt-2 text-xs whitespace-pre-line text-ink-3">{{ d.attribution.acknowledgement }}</p>
         </details>
@@ -113,14 +114,14 @@ const { datasets, imagery, loaded } = useCatalog()
       <div class="mt-4 space-y-2">
         <details v-for="p in imagery" :key="p.name" class="card group px-4 py-3">
           <summary class="flex cursor-pointer list-none flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span class="font-semibold">{{ p.attribution.text || p.name }}</span>
+            <span class="font-semibold">{{ p.attribution?.text || p.name }}</span>
             <span class="text-sm text-ink-3">max zoom {{ p.maxZoom }}</span>
             <span class="ml-auto text-xs text-accent group-open:hidden">Details</span>
           </summary>
           <p class="mt-2 text-sm">
-            <a :href="p.attribution.url" target="_blank" rel="noopener noreferrer" class="text-accent underline">{{ p.attribution.url }}</a>
+            <a :href="safeUrl(p.attribution?.url)" target="_blank" rel="noopener noreferrer" class="text-accent underline">{{ p.attribution?.url }}</a>
           </p>
-          <p v-if="p.attribution.acknowledgement" class="mt-1 text-xs text-ink-3">{{ p.attribution.acknowledgement }}</p>
+          <p v-if="p.attribution?.acknowledgement" class="mt-1 text-xs text-ink-3">{{ p.attribution?.acknowledgement }}</p>
         </details>
       </div>
     </section>

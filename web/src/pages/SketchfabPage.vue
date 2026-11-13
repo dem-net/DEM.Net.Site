@@ -2,23 +2,28 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ExternalLink, LoaderCircle, Upload, X } from '@lucide/vue'
-import { api } from '@/api/client'
+import { api, safeUrl } from '@/api/client'
 import { ensureConnected, useProgress } from '@/api/hub'
+import { completeSketchfabLogin } from '@/api/sketchfabAuth'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
 
 /**
  * OAuth implicit-grant callback. Sketchfab redirects here with
- *   #access_token=…&state=<modelId>&…   on success
- *   ?error=access_denied&state=…        on refusal
+ *   #access_token=…&state=<nonce>&…   on success
+ *   ?error=access_denied&state=…      on refusal
+ * `state` must match the nonce stored by beginSketchfabLogin(), so a crafted link
+ * carrying someone else's token is refused.
  */
 const route = useRoute()
 const router = useRouter()
 
 const hash = new URLSearchParams(route.hash.replace(/^#/, ''))
 const token = hash.get('access_token')
-const modelId = hash.get('state') ?? (route.query.state as string | undefined) ?? null
-const authError = (route.query.error as string | undefined) ?? (!token ? 'missing access token' : null)
+const modelId = completeSketchfabLogin(hash.get('state') ?? (route.query.state as string | undefined) ?? null)
+const authError =
+  (route.query.error as string | undefined) ??
+  (!token ? 'missing access token' : !modelId ? 'the sign-in could not be verified, please start again from your model' : null)
 
 const form = reactive({
   modelName: '',
@@ -71,7 +76,7 @@ async function upload() {
       modelId,
       clientConnectionId,
     })
-    viewerUrl.value = res.viewModelUrl
+    viewerUrl.value = safeUrl(res.viewModelUrl) ?? null
   } catch (e) {
     error.value = (e as Error).message
   } finally {

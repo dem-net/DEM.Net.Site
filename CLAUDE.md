@@ -54,7 +54,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
   - The selected area is stored in `?bbox=`.
   - Old URLs (`/playground_*`) redirect in `src/router.ts`.
-  - `/sketchfab_oauth2` is the OAuth redirect URI registered with Sketchfab, so the path must not change. It reads `access_token` and `state` (the model id) from the URL hash and then removes them.
+  - `/sketchfab_oauth2` is the OAuth redirect URI registered with Sketchfab, so the path must not change. It reads `access_token` and `state` from the URL hash and then removes them. `state` is a CSRF nonce, not the model id: `beginSketchfabLogin()` (`src/api/sketchfabAuth.ts`) stores `{nonce, modelId}` in `sessionStorage`, and the callback refuses a token whose `state` doesn't match.
 - **3D preview**:
   - `viewers/GlbViewer.vue` uses `<model-viewer>`, loaded lazily and registered as a custom element in `vite.config.ts`. It shows load progress and asks before loading large files.
   - `viewers/StlViewer.vue` is a minimal three.js viewer, because `<model-viewer>` can't read STL. `three` must stay on the version `@google/model-viewer` expects as a peer dependency.
@@ -68,4 +68,9 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - The area's country is found by Photon reverse geocoding of the area's centre.
   - Inside CH/LI, the hint offers swissALTI3D 2m + SwissImage. When a regional option is used outside its country, it warns.
 - **OBJ export**: `GET /api/model/export/obj?modelId=<requestId>` returns a ZIP (`.obj`, `.mtl`, texture) for glTF models only (`ModelResult.objUrl`).
+- **Security**:
+  - The production build gets a Content-Security-Policy `<meta>` tag (`contentSecurityPolicy()` in `vite.config.ts`; build only, because dev HMR uses inline scripts). Add any new third-party host there, or the browser silently blocks it.
+  - Bind API-supplied URLs to `href` through `safeUrl()` (`client.ts`), which allows only http(s): Vue doesn't block `javascript:` URLs.
+  - The API's CORS allows any origin *without* credentials, so the SignalR connection uses `withCredentials: false`.
+  - The backend (`/Users/xfischer/Repos/DEM.Net.WebAPI`) throttles generation and exports per client IP (1 per 5 s, 1 running at a time by default); a second request gets HTTP 429 with `Retry-After`. Size estimates aren't throttled.
 - **GitHub Pages SPA routing**: the build copies `index.html` to `404.html` (a plugin in `vite.config.ts`), so deep links load the app.

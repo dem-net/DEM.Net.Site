@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, API_BASE, bboxToPath, meshReduceFactor, sketchfabLoginUrl, terrainModelPath, toModelResult } from './client'
+import { absoluteUrl, API_BASE, bboxToPath, meshReduceFactor, safeUrl, sketchfabLoginUrl, terrainModelPath, toModelResult } from './client'
 import type { ModelOptions } from './types'
 import { parseBBoxParam } from '@/composables/useAreaPicker'
 
@@ -117,11 +117,26 @@ describe('model result', () => {
   })
 })
 
-it('builds the Sketchfab implicit-grant URL with the model id as state', () => {
-  const url = new URL(sketchfabLoginUrl('model-42'))
+it('builds the Sketchfab implicit-grant URL with the given state', () => {
+  const url = new URL(sketchfabLoginUrl('nonce-42'))
   expect(url.origin + url.pathname).toBe('https://sketchfab.com/oauth2/authorize/')
-  expect(url.searchParams.get('state')).toBe('model-42')
+  expect(url.searchParams.get('state')).toBe('nonce-42')
   expect(url.searchParams.get('response_type')).toBe('token')
+})
+
+describe('safeUrl', () => {
+  it('keeps absolute http(s) URLs', () => {
+    expect(safeUrl('https://example.org/a?b=1')).toBe('https://example.org/a?b=1')
+    expect(safeUrl('http://giscience.uni-hd.de')).toBe('http://giscience.uni-hd.de')
+  })
+  it('drops script, data and relative URLs', () => {
+    expect(safeUrl('javascript:alert(1)')).toBeUndefined()
+    expect(safeUrl(' JavaScript:alert(1)')).toBeUndefined()
+    expect(safeUrl('data:text/html,<script>alert(1)</script>')).toBeUndefined()
+    expect(safeUrl('/relative')).toBeUndefined()
+    expect(safeUrl(null)).toBeUndefined()
+    expect(safeUrl('')).toBeUndefined()
+  })
 })
 
 describe('mesh detail and size estimate', () => {

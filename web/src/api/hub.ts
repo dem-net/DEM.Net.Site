@@ -38,7 +38,8 @@ function startWithRetry(conn: HubConnection): Promise<void> {
 function getConnection(): HubConnection {
   if (connection) return connection
   connection = new HubConnectionBuilder()
-    .withUrl(`${API_BASE}/elevation-hub`)
+    // The API's CORS policy allows any origin without credentials; SignalR sends credentials by default.
+    .withUrl(`${API_BASE}/elevation-hub`, { withCredentials: false })
     .withAutomaticReconnect()
     .configureLogging(import.meta.env.DEV ? LogLevel.Information : LogLevel.Warning)
     .build()

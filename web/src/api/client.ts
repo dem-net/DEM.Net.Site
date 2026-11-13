@@ -65,6 +65,20 @@ export function absoluteUrl(path: string | null | undefined): string | null {
   return /^https?:\/\//.test(path) ? path : API_BASE + path
 }
 
+/**
+ * Returns the URL only if it is absolute http(s), for binding API-supplied links to `href`
+ * (Vue does not block `javascript:` URLs). `undefined` makes Vue drop the attribute.
+ */
+export function safeUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined
+  try {
+    const { protocol } = new URL(url)
+    return protocol === 'http:' || protocol === 'https:' ? url : undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function toModelResult(info: AssetInfo, format: ModelOptions['format']): ModelResult {
   return {
     id: info.requestId,
@@ -206,10 +220,13 @@ export const api = {
 
 const SKETCHFAB_CLIENT_ID = 'SKa6zTHsHdgbs7RE7oug69QQq9TMDPv8gtqAZUuj'
 
-/** Implicit-grant login; Sketchfab redirects back to /sketchfab_oauth2#access_token=…&state=<modelId>. */
-export function sketchfabLoginUrl(modelId: string): string {
+/**
+ * Implicit-grant login; Sketchfab redirects back to /sketchfab_oauth2#access_token=…&state=<state>.
+ * Use beginSketchfabLogin() (sketchfabAuth.ts), which passes a CSRF nonce as `state`.
+ */
+export function sketchfabLoginUrl(state: string): string {
   return `https://sketchfab.com/oauth2/authorize/?${query({
-    state: modelId,
+    state,
     response_type: 'token',
     client_id: SKETCHFAB_CLIENT_ID,
     approval_prompt: 'auto',

@@ -17,7 +17,8 @@ export interface Dataset {
 
 export interface ImageryProvider {
   name: string
-  attribution: Attribution
+  /** Missing when a provider is configured without one. */
+  attribution?: Attribution
   maxZoom: number
   privateUseOnly: boolean
 }

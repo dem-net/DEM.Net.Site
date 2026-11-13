@@ -72,7 +72,7 @@ const formats = computed(() => [
       <div v-if="options.textured">
         <label class="field-label" for="imagery">Imagery</label>
         <select id="imagery" v-model="options.imageryProvider" class="input">
-          <option v-for="p in imagery" :key="p.name" :value="p.name">{{ p.attribution.text || p.name }}</option>
+          <option v-for="p in imagery" :key="p.name" :value="p.name">{{ p.attribution?.text || p.name }}</option>
         </select>
       </div>
     </template>

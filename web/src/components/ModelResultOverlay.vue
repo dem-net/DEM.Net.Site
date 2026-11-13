@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
 import { Download, ExternalLink, Map as MapIcon } from '@lucide/vue'
-import { sketchfabLoginUrl } from '@/api/client'
+import { safeUrl } from '@/api/client'
+import { beginSketchfabLogin } from '@/api/sketchfabAuth'
 import type { ModelResult } from '@/api/types'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
 import GlbViewer from './viewers/GlbViewer.vue'
@@ -21,7 +22,11 @@ const downloads = computed(() =>
   ].filter((d): d is { label: string; url: string; primary?: boolean } => !!d.url),
 )
 
-const sketchfabUrl = computed(() => (props.result.format === 'glTF' ? sketchfabLoginUrl(props.result.id) : null))
+const canPublish = computed(() => props.result.format === 'glTF')
+
+function publishOnSketchfab() {
+  window.location.assign(beginSketchfabLogin(props.result.id))
+}
 const elevationRange = computed(
   () => `${Math.round(props.result.minElevation)} – ${Math.round(props.result.maxElevation)} m`,
 )
@@ -54,9 +59,9 @@ const elevationRange = computed(
         >
           <Download class="size-4" /> {{ d.label }}
         </a>
-        <a v-if="sketchfabUrl" :href="sketchfabUrl" class="btn btn-secondary sm:ml-auto">
+        <button v-if="canPublish" type="button" class="btn btn-secondary sm:ml-auto" @click="publishOnSketchfab">
           <img :src="sketchfabLogo" alt="" class="size-4" /> Publish on Sketchfab
-        </a>
+        </button>
       </div>
 
       <div v-if="result.attributions.length" class="mt-4 border-t border-line pt-3">
@@ -64,7 +69,7 @@ const elevationRange = computed(
         <ul class="space-y-1 text-xs text-ink-3">
           <li v-for="a in result.attributions" :key="a.subject + a.text">
             <span class="font-medium text-ink-2">{{ a.subject }}:</span>
-            <a v-if="a.url" :href="a.url" target="_blank" rel="noopener noreferrer" class="ml-1 inline-flex items-center gap-0.5 underline">
+            <a v-if="safeUrl(a.url)" :href="safeUrl(a.url)" target="_blank" rel="noopener noreferrer" class="ml-1 inline-flex items-center gap-0.5 underline">
               {{ a.text }} <ExternalLink class="size-3" />
             </a>
             <span v-else class="ml-1">{{ a.text }}</span>
