@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl'
-import { computed, ref, shallowRef } from 'vue'
+import { computed, nextTick, ref, shallowRef } from 'vue'
 import { FileUp, Route, X } from '@lucide/vue'
 import { api } from '@/api/client'
 import BaseMap from '@/components/map/BaseMap.vue'
@@ -122,17 +122,28 @@ const sizeLabel = computed(() => {
   return `${s.width.toFixed(1)} × ${s.height.toFixed(1)} km`
 })
 
+const layout = ref<InstanceType<typeof ToolLayout>>()
+
 async function generate() {
   const f = file.value
   if (!f) return
   showResult.value = false
-  await gen.run((id, signal) => api.gpxModel(f, options, track3D.value, id, signal))
-  if (gen.result.value) showResult.value = true
+  const done = gen.run((id, signal) => api.gpxModel(f, options, track3D.value, id, signal))
+  // On mobile the footer scrolls with the options: show the progress, then the model.
+  await nextTick()
+  layout.value?.scrollToFooter()
+  await done
+  if (gen.result.value) showModel()
+}
+
+function showModel() {
+  showResult.value = true
+  layout.value?.scrollToTop()
 }
 </script>
 
 <template>
-  <ToolLayout title="GPX to 3D" subtitle="Upload a track and get a 3D model of the terrain around it.">
+  <ToolLayout ref="layout" title="GPX to 3D" subtitle="Upload a track and get a 3D model of the terrain around it.">
     <template #panel>
       <StepBlock :n="1" title="Your GPX track" :done="!!file">
         <div
@@ -195,7 +206,7 @@ async function generate() {
           :has-result="!!gen.result.value && !showResult"
           @generate="generate"
           @cancel="gen.cancel()"
-          @show="showResult = true"
+          @show="showModel"
         />
     </template>
 

@@ -84,6 +84,24 @@ function reset() {
 }
 
 onBeforeUnmount(stopDrag)
+
+// On mobile the whole panel scrolls (the footer follows the options), so pages use these to
+// bring the primary action / progress into view, then the map (where the model opens) back.
+// On desktop the footer is always visible and nothing scrolls, so both are no-ops there.
+const footer = ref<HTMLElement>()
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+const behavior = (): ScrollBehavior => (prefersReducedMotion() ? 'auto' : 'smooth')
+
+function scrollToFooter() {
+  footer.value?.scrollIntoView({ block: 'nearest', behavior: behavior() })
+}
+
+function scrollToTop() {
+  aside.value?.scrollTo({ top: 0, behavior: behavior() })
+  window.scrollTo({ top: 0, behavior: behavior() })
+}
+
+defineExpose({ scrollToFooter, scrollToTop })
 </script>
 
 <template>
@@ -91,7 +109,7 @@ onBeforeUnmount(stopDrag)
     <aside
       ref="aside"
       :style="panelStyle"
-      class="@container relative order-2 flex max-h-[55dvh] min-h-0 flex-col border-t border-line bg-surface md:order-1 md:max-h-none md:w-(--panel-w) md:shrink-0 md:border-t-0 md:border-r"
+      class="@container relative order-2 flex max-h-[55dvh] min-h-0 flex-col overflow-y-auto overscroll-contain border-t border-line bg-surface md:order-1 md:max-h-none md:w-(--panel-w) md:shrink-0 md:overflow-visible md:border-t-0 md:border-r"
     >
       <div class="flex items-start gap-3 border-b border-line px-5 pt-4 pb-3">
         <div class="min-w-0 flex-1">
@@ -102,13 +120,14 @@ onBeforeUnmount(stopDrag)
         <slot name="actions" />
       </div>
       <div
-        class="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+        class="shrink-0 px-5 py-4 md:min-h-0 md:flex-1 md:shrink md:overflow-y-auto"
         :class="$slots.footer ? '' : 'pb-[max(1rem,env(safe-area-inset-bottom))]'"
       >
         <slot name="panel" />
       </div>
-      <!-- Primary action stays visible while the options scroll -->
-      <div v-if="$slots.footer" class="border-t border-line px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <!-- Desktop: the primary action stays visible while the options scroll.
+           Mobile: the whole panel scrolls and the footer follows the options, leaving more room to scroll. -->
+      <div v-if="$slots.footer" ref="footer" class="shrink-0 border-t border-line px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <slot name="footer" />
       </div>
 
