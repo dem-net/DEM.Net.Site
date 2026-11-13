@@ -104,6 +104,7 @@ function modelQuery(o: ModelOptions, connectionId: string | null) {
     format: o.format,
     zFactor: o.zFactor,
     meshReduceFactor: meshReduceFactor(o.meshDetail),
+    adornments: o.format === 'glTF' && o.adornments,
     clientConnectionId: connectionId,
   }
 }

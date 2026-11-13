@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { Download, ExternalLink, Map as MapIcon } from '@lucide/vue'
 import { safeUrl } from '@/api/client'
-import { beginSketchfabLogin } from '@/api/sketchfabAuth'
 import type { ModelResult } from '@/api/types'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
+import SketchfabPublishDialog from './SketchfabPublishDialog.vue'
 import GlbViewer from './viewers/GlbViewer.vue'
 
 const StlViewer = defineAsyncComponent(() => import('./viewers/StlViewer.vue'))
@@ -24,9 +24,7 @@ const downloads = computed(() =>
 
 const canPublish = computed(() => props.result.format === 'glTF')
 
-function publishOnSketchfab() {
-  window.location.assign(beginSketchfabLogin(props.result.id))
-}
+const publishDialog = ref<InstanceType<typeof SketchfabPublishDialog>>()
 const elevationRange = computed(
   () => `${Math.round(props.result.minElevation)} – ${Math.round(props.result.maxElevation)} m`,
 )
@@ -54,15 +52,18 @@ const elevationRange = computed(
           :key="d.url"
           :href="d.url"
           download
+          target="_blank"
+          rel="noopener"
           class="btn"
           :class="d.primary ? 'btn-primary' : 'btn-secondary'"
         >
           <Download class="size-4" /> {{ d.label }}
         </a>
-        <button v-if="canPublish" type="button" class="btn btn-secondary sm:ml-auto" @click="publishOnSketchfab">
+        <button v-if="canPublish" type="button" class="btn btn-secondary sm:ml-auto" @click="publishDialog?.open()">
           <img :src="sketchfabLogo" alt="" class="size-4" /> Publish on Sketchfab
         </button>
       </div>
+      <SketchfabPublishDialog v-if="canPublish" :key="result.id" ref="publishDialog" :model-id="result.id" />
 
       <div v-if="result.attributions.length" class="mt-4 border-t border-line pt-3">
         <p class="field-label">Credits</p>

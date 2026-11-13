@@ -10,6 +10,7 @@ export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
   textureQuality: 2,
   zFactor: 1,
   meshDetail: 50,
+  adornments: true,
 })
 
 export function useModelOptions(overrides: Partial<ModelOptions> = {}) {

@@ -16,6 +16,8 @@ const failed = ref(false)
 const autoRotate = ref(true)
 const el = ref<HTMLElement>()
 
+// No post-processing (SSAO, sharpen…): it was tried and dropped as too risky for browser stability.
+// Terrain is made matte on load instead (metallic 0, Specular F0 0, see matteTerrain.ts).
 onMounted(async () => {
   await import('@google/model-viewer')
   ready.value = true
@@ -33,6 +35,12 @@ watch(
 
 function onProgress(e: Event) {
   progress.value = (e as CustomEvent<{ totalProgress: number }>).detail.totalProgress
+}
+
+async function onLoad() {
+  loaded.value = true
+  const { makeTerrainMatte } = await import('./matteTerrain')
+  if (el.value) makeTerrainMatte(el.value)
 }
 
 const pct = computed(() => Math.round(progress.value * 100))
@@ -69,14 +77,15 @@ function fullscreen() {
         rotation-per-second="12deg"
         interaction-prompt="none"
         camera-orbit="-25deg 58deg auto"
-        shadow-intensity="0.6"
+        shadow-intensity="1"
+        shadow-softness="0.6"
         exposure="0.9"
         tone-mapping="neutral"
         environment-image="neutral"
         max-camera-orbit="auto 88deg auto"
         style="width: 100%; height: 100%; background: transparent; --poster-color: transparent"
         @progress="onProgress"
-        @load="loaded = true"
+        @load="onLoad"
         @error="failed = true"
       />
       <div v-if="!loaded && !failed" class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2">
