@@ -167,3 +167,26 @@ export interface SketchfabExportRequest {
   password: string
   clientConnectionId?: string | null
 }
+
+/** What a generation produced: terrain (Map to 3D), osm (Map to 3D with OpenStreetMap), gpx, textures. */
+export type GenerationKind = 'terrain' | 'osm' | 'gpx' | 'textures'
+export const GENERATION_KINDS: readonly GenerationKind[] = ['terrain', 'osm', 'gpx', 'textures']
+
+/** One successful model or texture generation, from the public statistics. */
+export interface Generation {
+  dataset: string
+  kind: GenerationKind
+  /** glTF or STL for models; the generated images (e.g. "texture,heightmap") for textures. */
+  format: string
+  /** Null when unknown. */
+  sizeBytes: number | null
+  /** yyyy-mm-dd (UTC) */
+  date: string
+  /** Null when unknown (GPX models recorded before the statistics database). */
+  bbox: BBox | null
+}
+
+export interface GenerationStats {
+  updatedAt: string
+  generations: Generation[]
+}
