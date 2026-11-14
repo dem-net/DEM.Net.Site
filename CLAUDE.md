@@ -58,6 +58,11 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
 - **Pages** (`src/pages/`):
   - Tool pages use `ToolLayout` (a side panel with a sticky footer for the primary action, and the map).
   - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
+  - `StatsPage` (`/stats`) maps every successful generation from `GET /api/stats/generations` (compact rows read by `toGenerationStats()`; the backend stores them in PostgreSQL/PostGIS, cached for a minute). Footprints are exact, not snapped: that was a deliberate choice.
+    - Each dataset has its own sources and layers (footprint fill + outline, plus centre points that fade out by zoom 10), toggled from the panel. Aggregation, colors and GeoJSON are in `src/composables/generationStats.ts`.
+    - Colors: the 7 most used datasets take the fixed categorical order (`SERIES_COLORS`, CVD-validated on adjacent pairs), the rest share `OTHER_COLOR`. Colors are assigned once per load, so hiding a dataset never repaints the others.
+    - The page defaults to the Streets basemap. MapLibre popups live outside the component, so their theme styles are in an unscoped, `.stats-popup`-namespaced `<style>`.
+    - What's published is disclosed on `/privacy#statistics`. Update it if the published fields change.
   - `TexturesPage` (`/textures`) has one Generate button per image plus "Generate all (.zip)". Only one job runs at a time (the server throttle). Results are dropped when the area or options change. The Map to 3D result links to it with the same `?bbox=`.
   - Shared pieces: `AreaStep.vue` (step 1 of the bbox tools), `ImageryFields.vue` (imagery + quality), `RegionHint.vue` (`v-model:dataset`, `v-model:imagery-provider`).
   - The "New" badge (`NewBadge.vue`) is driven by `isNew` on the tool entries in `App.vue` and `HomePage.vue`. Remove it there once the tool is no longer new.

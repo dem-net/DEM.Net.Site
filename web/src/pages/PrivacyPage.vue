@@ -47,6 +47,15 @@ const optedOut = document.cookie.split('; ').includes('analytics_optout=1')
       </p>
     </section>
 
+    <section id="statistics">
+      <h2 class="text-xl font-semibold">Public statistics</h2>
+      <p class="mt-3 text-ink-2">
+        For each model or texture set generated successfully, the Elevation API keeps its area, the dataset, the type of output, the
+        file size and the date, and shows them to everyone on the <RouterLink to="/stats" class="text-accent hover:underline">statistics</RouterLink>
+        page. Nothing that identifies who made the request is stored with them: no IP address and no GPX file name.
+      </p>
+    </section>
+
     <section id="services">
       <h2 class="text-xl font-semibold">Services this site uses</h2>
       <p class="mt-3 text-ink-2">Your browser connects to these services, which therefore see your IP address:</p>

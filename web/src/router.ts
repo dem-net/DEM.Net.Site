@@ -27,6 +27,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('./pages/ElevationPage.vue'),
     meta: { title: 'Elevation', fullBleed: true },
   },
+  {
+    path: '/stats',
+    name: 'stats',
+    component: () => import('./pages/StatsPage.vue'),
+    meta: { title: 'Statistics', fullBleed: true },
+  },
   { path: '/expo', name: 'expo', component: () => import('./pages/ExpoPage.vue'), meta: { title: 'Expo' } },
   { path: '/faq', name: 'faq', component: () => import('./pages/FaqPage.vue'), meta: { title: 'FAQ' } },
   { path: '/about', name: 'about', component: () => import('./pages/AboutPage.vue'), meta: { title: 'About' } },

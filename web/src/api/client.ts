@@ -1,9 +1,12 @@
+import { GENERATION_KINDS } from './types'
 import type {
   AssetInfo,
   Attribution,
   BBox,
   Dataset,
   ElevationResponse,
+  Generation,
+  GenerationStats,
   ImageryProvider,
   ModelOptions,
   ModelResult,
@@ -223,6 +226,38 @@ export function toTextureEstimates(r: TextureEstimateResponse): { estimates: Tex
   }
 }
 
+/** GET /api/stats/generations: rows of values in the order of `columns`. */
+export interface GenerationStatsResponse {
+  updatedAt: string
+  columns: string[]
+  rows: unknown[][]
+}
+
+const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+
+/** Reads the rows by column name; malformed rows are dropped. */
+export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
+  const col = (name: string) => r.columns.indexOf(name)
+  const [ds, kind, format, size, date, w, s, e, n] = [
+    'dataset', 'kind', 'format', 'sizeBytes', 'date', 'west', 'south', 'east', 'north',
+  ].map(col)
+  const generations: Generation[] = []
+  for (const row of r.rows ?? []) {
+    const k = row[kind] as Generation['kind']
+    if (typeof row[ds] !== 'string' || !GENERATION_KINDS.includes(k) || typeof row[date] !== 'string') continue
+    const box = [row[w], row[s], row[e], row[n]]
+    generations.push({
+      dataset: row[ds] as string,
+      kind: k,
+      format: typeof row[format] === 'string' ? (row[format] as string) : '',
+      sizeBytes: isNum(row[size]) && row[size] >= 0 ? row[size] : null,
+      date: row[date] as string,
+      bbox: box.every(isNum) ? { west: box[0] as number, south: box[1] as number, east: box[2] as number, north: box[3] as number } : null,
+    })
+  }
+  return { updatedAt: r.updatedAt, generations }
+}
+
 interface EstimateResponse {
   success: boolean
   estimatedModelFileSizeMB: number
@@ -234,6 +269,9 @@ export const api = {
   datasets: () => request<Dataset[]>('/api/dataset'),
 
   imagery: () => request<ImageryProvider[]>('/api/imagery'),
+
+  /** Every successful model and texture generation (public statistics, refreshed every minute by the API). */
+  generationStats: async () => toGenerationStats(await request<GenerationStatsResponse>('/api/stats/generations')),
 
   pointElevation: (lat: number, lon: number, dataSet: string) =>
     request<ElevationResponse>(`/api/elevation?${query({ lat, lon, dataSet })}`),
