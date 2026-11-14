@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
-import { Download, ExternalLink, Map as MapIcon } from '@lucide/vue'
+import { RouterLink, type RouteLocationRaw } from 'vue-router'
+import { Download, ExternalLink, Layers, Map as MapIcon } from '@lucide/vue'
 import { safeUrl } from '@/api/client'
 import type { ModelResult } from '@/api/types'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
@@ -9,16 +10,17 @@ import GlbViewer from './viewers/GlbViewer.vue'
 
 const StlViewer = defineAsyncComponent(() => import('./viewers/StlViewer.vue'))
 
-const props = defineProps<{ result: ModelResult }>()
+const props = defineProps<{
+  result: ModelResult
+  /** Textures page for the same area (texture, normal map, height map). */
+  texturesLink?: RouteLocationRaw
+}>()
 const emit = defineEmits<{ close: [] }>()
 
 const downloads = computed(() =>
   [
     { label: props.result.format === 'STL' ? 'Model (STL)' : 'Model (GLB)', url: props.result.modelUrl, primary: true },
     { label: 'OBJ (zip)', url: props.result.objUrl },
-    { label: 'Texture', url: props.result.albedoUrl },
-    { label: 'Height map', url: props.result.heightMapUrl },
-    { label: 'Normal map', url: props.result.normalMapUrl },
   ].filter((d): d is { label: string; url: string; primary?: boolean } => !!d.url),
 )
 
@@ -63,6 +65,12 @@ const elevationRange = computed(
           <img :src="sketchfabLogo" alt="" class="size-4" /> Publish on Sketchfab
         </button>
       </div>
+      <p v-if="texturesLink" class="mt-3 text-xs text-ink-3">
+        Need the texture, a normal map or a height map, georeferenced?
+        <RouterLink :to="texturesLink" class="inline-flex items-center gap-1 font-medium text-accent hover:underline">
+          <Layers class="size-3.5" /> Get them on the Textures page
+        </RouterLink>
+      </p>
       <SketchfabPublishDialog v-if="canPublish" :key="result.id" ref="publishDialog" :model-id="result.id" />
 
       <div v-if="result.attributions.length" class="mt-4 border-t border-line pt-3">

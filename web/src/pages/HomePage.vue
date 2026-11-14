@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { ArrowRight, Mountain, Route, Spline } from '@lucide/vue'
+import { ArrowRight, Layers, Mountain, Route, Spline } from '@lucide/vue'
+import NewBadge from '@/components/NewBadge.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 
 const tools = [
@@ -15,6 +16,13 @@ const tools = [
     icon: Route,
     title: 'GPX to 3D',
     text: 'Upload a hike, ride or run and see it in 3D on the terrain around it.',
+  },
+  {
+    to: '/textures',
+    icon: Layers,
+    title: 'Textures',
+    text: 'Get the georeferenced satellite texture, normal map and height map of any area.',
+    isNew: true,
   },
   {
     to: '/elevation',
@@ -51,11 +59,12 @@ const tools = [
     </section>
 
     <section class="mx-auto max-w-6xl px-4 pb-16">
-      <div class="grid gap-4 md:grid-cols-3">
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <RouterLink v-for="t in tools" :key="t.to" :to="t.to" class="card group p-6 transition-colors hover:border-accent">
           <component :is="t.icon" class="size-6 text-accent" />
           <h2 class="mt-4 flex items-center gap-1 font-semibold">
             {{ t.title }}
+            <NewBadge v-if="'isNew' in t && t.isNew" class="ml-1" />
             <ArrowRight class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
           </h2>
           <p class="mt-1 text-sm text-ink-3">{{ t.text }}</p>

@@ -36,6 +36,12 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - The GPX endpoint ignores `onlyEstimateSize`. The GPX page estimates with the bbox endpoint over the track bounds plus 1 km, and only warns.
     - `useSizeEstimate()` handles the debouncing and the "Reduce to fit" detail level (`detailToFit`, linear in `meshReduceFactor`).
   - `meshReduceFactor` (0.1–1) is the UI's "Mesh detail" (10–100 %, default 50 %).
+  - **Textures** (`texturePath()`, `api.textures()`): `GET /api/texture/bbox/{w,e,s,n}?outputs=texture,normalmap,heightmap` generates only the requested images.
+    - Every image comes with a world file (`.jgw`/`.pgw`) and a `.prj`, plus one ZIP with `metadata.json` (min/max elevation for decoding the 16-bit height map). `toTextureResult()` rejects an image without its georeferencing.
+    - The texture is in EPSG:3857. The normal map and height map are in the dataset's SRID (one pixel per DEM sample).
+    - `onlyEstimateSize=true` returns per-image estimates, gated by the same limit as models (`useTextureEstimate()`).
+    - Model endpoints no longer return `heightMap`/`albedoTexture`/`normalMapTexture` (the texture is only embedded in the GLB).
+    - Cross-origin `<a download>` is ignored, so the page saves sidecar files with `saveFile()` (`src/api/download.ts`).
 - **SignalR progress** (`src/api/hub.ts`):
   - One shared `@microsoft/signalr` connection to `/elevation-hub`.
   - `useProgress('generate' | 'export')` joins and leaves the server group (`Join/LeaveGeneratorGroup`, `Join/LeaveExportGroup`) and listens for `ReportGenerateProgress` / `ReportExportProgress`. Group membership is ref-counted and re-joined after a reconnect.
@@ -52,6 +58,9 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
 - **Pages** (`src/pages/`):
   - Tool pages use `ToolLayout` (a side panel with a sticky footer for the primary action, and the map).
   - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
+  - `TexturesPage` (`/textures`) has one Generate button per image plus "Generate all (.zip)". Only one job runs at a time (the server throttle). Results are dropped when the area or options change. The Map to 3D result links to it with the same `?bbox=`.
+  - Shared pieces: `AreaStep.vue` (step 1 of the bbox tools), `ImageryFields.vue` (imagery + quality), `RegionHint.vue` (`v-model:dataset`, `v-model:imagery-provider`).
+  - The "New" badge (`NewBadge.vue`) is driven by `isNew` on the tool entries in `App.vue` and `HomePage.vue`. Remove it there once the tool is no longer new.
   - The selected area is stored in `?bbox=`.
   - **Share links** (Map to 3D, `ShareButton.vue`) add the map view, basemap, 3D relief and the non-default model options to the URL (`src/composables/shareLink.ts`).
     - Values from a link are validated, and dataset and imagery names are checked against the catalog.

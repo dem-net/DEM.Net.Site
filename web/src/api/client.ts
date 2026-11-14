@@ -1,5 +1,6 @@
 import type {
   AssetInfo,
+  Attribution,
   BBox,
   Dataset,
   ElevationResponse,
@@ -9,6 +10,11 @@ import type {
   OsmOptions,
   SizeEstimate,
   SketchfabExportRequest,
+  TextureEstimate,
+  TextureFile,
+  TextureKind,
+  TextureOptions,
+  TextureSetResult,
 } from './types'
 
 /** Production API by default; override with VITE_API_BASEURL (e.g. in .env.development.local) for a local backend. */
@@ -87,9 +93,6 @@ export function toModelResult(info: AssetInfo, format: ModelOptions['format']): 
     sizeMB: info.modelFileSizeMB,
     minElevation: info.minElevation,
     maxElevation: info.maxElevation,
-    heightMapUrl: absoluteUrl(info.heightMap?.filePath),
-    albedoUrl: absoluteUrl(info.albedoTexture?.filePath),
-    normalMapUrl: absoluteUrl(info.normalMapTexture?.filePath),
     objUrl: format === 'glTF' ? `${API_BASE}/api/model/export/obj?${query({ modelId: info.requestId })}` : null,
     attributions: info.attributions ?? [],
   }
@@ -141,6 +144,83 @@ export function terrainModelPath(
     ...(onlyEstimateSize ? { onlyEstimateSize: true } : {}),
   }
   return `${base}${bboxToPath(bbox)}?${query(params)}`
+}
+
+export function texturePath(
+  bbox: BBox,
+  o: TextureOptions,
+  kinds: readonly TextureKind[],
+  connectionId: string | null,
+  onlyEstimateSize = false,
+): string {
+  const params = {
+    outputs: kinds.join(','),
+    dataSet: o.dataset,
+    // The server requires (and checks) a provider only for the texture
+    imageryProvider: kinds.includes('texture') ? o.imageryProvider : null,
+    textureQuality: o.textureQuality,
+    clientConnectionId: connectionId,
+    ...(onlyEstimateSize ? { onlyEstimateSize: true } : {}),
+  }
+  return `/api/texture/bbox/${bboxToPath(bbox)}?${query(params)}`
+}
+
+interface TextureFileResponse {
+  kind: TextureKind
+  filePath: string
+  worldFilePath: string
+  prjFilePath: string
+  srid: number
+  width: number
+  height: number
+  sizeMB: number
+}
+
+export interface TextureSetResponse {
+  requestId: string
+  minElevation?: number | null
+  maxElevation?: number | null
+  files: TextureFileResponse[]
+  zipFilePath: string
+  attributions?: Attribution[]
+}
+
+/** Absolute URLs; an image without its georeferencing files is a server error, not a partial result. */
+export function toTextureResult(r: TextureSetResponse): TextureSetResult {
+  const files = r.files.map((f): TextureFile => {
+    const imageUrl = absoluteUrl(f.filePath)
+    const worldFileUrl = absoluteUrl(f.worldFilePath)
+    const prjUrl = absoluteUrl(f.prjFilePath)
+    if (!imageUrl || !worldFileUrl || !prjUrl) throw new ApiError(500, `The ${f.kind} was returned without its georeferencing files.`)
+    return { kind: f.kind, imageUrl, worldFileUrl, prjUrl, srid: f.srid, width: f.width, height: f.height, sizeMB: f.sizeMB }
+  })
+  return {
+    id: r.requestId,
+    files,
+    zipUrl: absoluteUrl(r.zipFilePath)!,
+    minElevation: r.minElevation ?? null,
+    maxElevation: r.maxElevation ?? null,
+    attributions: r.attributions ?? [],
+  }
+}
+
+interface TextureEstimateResponse {
+  success: boolean
+  estimates: { kind: TextureKind; width: number; height: number; estimatedSizeMB: number }[]
+  maximumAllowedFileSizeMB: number
+}
+
+export function toTextureEstimates(r: TextureEstimateResponse): { estimates: TextureEstimate[]; maxMB: number } {
+  return {
+    maxMB: r.maximumAllowedFileSizeMB,
+    estimates: r.estimates.map((e) => ({
+      kind: e.kind,
+      width: e.width,
+      height: e.height,
+      sizeMB: e.estimatedSizeMB,
+      allowed: e.estimatedSizeMB <= r.maximumAllowedFileSizeMB,
+    })),
+  }
 }
 
 interface EstimateResponse {
@@ -208,6 +288,21 @@ export const api = {
       { method: 'POST', body: form, signal },
     )
     return toModelResult(res.assetInfo, o.format)
+  },
+
+  async textures(
+    bbox: BBox,
+    o: TextureOptions,
+    kinds: readonly TextureKind[],
+    connectionId: string | null,
+    signal?: AbortSignal,
+  ): Promise<TextureSetResult> {
+    return toTextureResult(await request<TextureSetResponse>(texturePath(bbox, o, kinds, connectionId), { signal }))
+  },
+
+  /** Size of each image (fast, nothing is generated). */
+  async estimateTextures(bbox: BBox, o: TextureOptions, kinds: readonly TextureKind[], signal?: AbortSignal) {
+    return toTextureEstimates(await request<TextureEstimateResponse>(texturePath(bbox, o, kinds, null, true), { signal }))
   },
 
   sketchfabExport: (req: SketchfabExportRequest) =>

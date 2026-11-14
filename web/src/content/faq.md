@@ -31,6 +31,10 @@ __You'll find in the [About page](/about#imagery), and in the "Credits" section 
 
 - Models coordinates are projected to Web Mercator (3857). Units are in meters.
 
+- For GIS work, the [Textures](/textures) page generates georeferenced images of an area: the satellite texture (JPEG, Web Mercator), a normal map and a 16-bit height map (PNG, in the elevation dataset's own coordinate system). Each image comes with a world file (`.jgw` / `.pgw`) and a projection file (`.prj`), so QGIS, ArcGIS or Blender GIS place it on the map. The ZIP also has a `metadata.json` with the minimum and maximum elevation, to turn the height map's gray levels back into meters.
+
+- The same images are available from the API: `/api/texture/bbox/{west},{east},{south},{north}?outputs=texture,normalmap,heightmap`. Model requests no longer return them.
+
 ## How can I share my model?
 
 - The best way (for now) is to upload it to [SketchFab](https://sketchfab.com), where you can setup the camera and 3D post processing effects, and share your model. See [DEM Net Elevation API gallery](https://sketchfab.com/xfischer).

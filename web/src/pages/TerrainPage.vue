@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Crosshair, Scan, Trash2 } from '@lucide/vue'
 import { api, bboxToPath } from '@/api/client'
 import AddressSearch from '@/components/map/AddressSearch.vue'
+import AreaStep from '@/components/AreaStep.vue'
 import BaseMap from '@/components/map/BaseMap.vue'
 import GenerateBlock from '@/components/GenerateBlock.vue'
 import SizeGauge from '@/components/SizeGauge.vue'
@@ -114,27 +114,7 @@ function showModel() {
       <ShareButton :get-url="shareUrl" title="Map to 3D · Elevation API" />
     </template>
     <template #panel>
-      <StepBlock :n="1" title="Choose an area" :done="!!area.bbox.value">
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" class="btn btn-secondary" :class="area.isDrawing.value ? 'border-accent text-accent' : ''" @click="area.startDrawing()">
-            <Scan class="size-4" /> Draw area
-          </button>
-          <button type="button" class="btn btn-secondary" @click="area.useView()">
-            <Crosshair class="size-4" /> Use map view
-          </button>
-        </div>
-        <p v-if="area.isDrawing.value" class="mt-2 text-xs text-ink-3">Click and drag on the map to draw a rectangle.</p>
-        <div v-else-if="area.bbox.value" class="mt-2 flex items-center justify-between rounded-lg bg-subtle px-3 py-2 text-sm">
-          <span>
-            {{ area.sizeLabel.value }}
-            <span class="block text-xs text-ink-3">Drag the corners to adjust</span>
-          </span>
-          <button type="button" class="p-1 text-ink-3 hover:text-danger" aria-label="Remove area" @click="area.clear()">
-            <Trash2 class="size-4" />
-          </button>
-        </div>
-        <p v-else class="mt-2 text-xs text-ink-3">Search a place on the map, then draw a rectangle around it.</p>
-      </StepBlock>
+      <AreaStep :area="area" />
 
       <StepBlock :n="2" title="Options">
         <ModelOptionsForm v-model="options" :allow-stl="!withOsm" :country="country" />
@@ -193,7 +173,12 @@ function showModel() {
       <BaseMap ref="baseMap" :initial="sharedMap" @ready="area.onReady">
         <template #search><AddressSearch /></template>
       </BaseMap>
-      <ModelResultOverlay v-if="showResult && gen.result.value" :result="gen.result.value" @close="showResult = false" />
+      <ModelResultOverlay
+        v-if="showResult && gen.result.value"
+        :result="gen.result.value"
+        :textures-link="area.bbox.value ? { path: '/textures', query: { bbox: bboxToPath(area.bbox.value) } } : undefined"
+        @close="showResult = false"
+      />
     </template>
   </ToolLayout>
 </template>

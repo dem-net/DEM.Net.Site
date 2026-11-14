@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { absoluteUrl, API_BASE, bboxToPath, meshReduceFactor, safeUrl, sketchfabLoginUrl, terrainModelPath, toModelResult } from './client'
-import type { ModelOptions } from './types'
+import {
+  absoluteUrl,
+  API_BASE,
+  bboxToPath,
+  meshReduceFactor,
+  safeUrl,
+  sketchfabLoginUrl,
+  terrainModelPath,
+  texturePath,
+  toModelResult,
+  toTextureEstimates,
+  toTextureResult,
+} from './client'
+import type { ModelOptions, TextureOptions } from './types'
 import { parseBBoxParam } from '@/composables/useAreaPicker'
 
 const opts: ModelOptions = {
@@ -92,7 +104,7 @@ describe('terrainModelPath', () => {
 })
 
 describe('model result', () => {
-  it('makes file paths absolute and keeps missing textures null', () => {
+  it('makes the model path absolute and has no texture files (see the textures endpoint)', () => {
     const r = toModelResult(
       {
         requestId: 'id1',
@@ -100,16 +112,12 @@ describe('model result', () => {
         modelFileSizeMB: 31.7,
         minElevation: 790,
         maxElevation: 4804,
-        albedoTexture: { filePath: '/gltf/x_Texture.jpg' },
-        heightMap: null,
         attributions: [],
       },
       'glTF',
     )
     expect(r.modelUrl).toBe(`${API_BASE}/gltf/x.glb`)
-    expect(r.albedoUrl).toBe(`${API_BASE}/gltf/x_Texture.jpg`)
-    expect(r.heightMapUrl).toBeNull()
-    expect(r.normalMapUrl).toBeNull()
+    for (const k of ['albedoUrl', 'heightMapUrl', 'normalMapUrl']) expect(r).not.toHaveProperty(k)
     expect(r.objUrl).toBe(`${API_BASE}/api/model/export/obj?modelId=id1`)
   })
 
@@ -120,6 +128,73 @@ describe('model result', () => {
 
   it('leaves absolute URLs untouched', () => {
     expect(absoluteUrl('https://cdn.example/x.glb')).toBe('https://cdn.example/x.glb')
+  })
+})
+
+describe('textures', () => {
+  const bbox = { west: 6.82, east: 6.91, south: 45.8, north: 45.86 }
+  const topts: TextureOptions = { dataset: 'SRTM_GL3', imageryProvider: 'Esri.WorldImagery', textureQuality: 2 }
+
+  it('builds the textures path with the requested outputs', () => {
+    const url = new URL(API_BASE + texturePath(bbox, topts, ['texture', 'heightmap'], 'conn1'))
+    expect(url.pathname).toBe('/api/texture/bbox/6.82,6.91,45.8,45.86')
+    expect(url.searchParams.get('outputs')).toBe('texture,heightmap')
+    expect(url.searchParams.get('dataSet')).toBe('SRTM_GL3')
+    expect(url.searchParams.get('imageryProvider')).toBe('Esri.WorldImagery')
+    expect(url.searchParams.get('textureQuality')).toBe('2')
+    expect(url.searchParams.get('clientConnectionId')).toBe('conn1')
+    expect(url.searchParams.has('onlyEstimateSize')).toBe(false)
+  })
+
+  it('sends the imagery provider only when the texture is requested', () => {
+    const url = new URL(API_BASE + texturePath(bbox, topts, ['heightmap'], null, true))
+    expect(url.searchParams.has('imageryProvider')).toBe(false)
+    expect(url.searchParams.has('clientConnectionId')).toBe(false)
+    expect(url.searchParams.get('onlyEstimateSize')).toBe('true')
+  })
+
+  const file = {
+    kind: 'heightmap' as const,
+    filePath: '/gltf/d/x_heightmap.png',
+    worldFilePath: '/gltf/d/x_heightmap.pgw',
+    prjFilePath: '/gltf/d/x_heightmap.prj',
+    srid: 4326,
+    width: 109,
+    height: 73,
+    sizeMB: 0.01,
+  }
+
+  it('makes image, world file, projection and zip URLs absolute', () => {
+    const r = toTextureResult({ requestId: 'r1', files: [file], zipFilePath: '/gltf/d/x_textures.zip', minElevation: 1713, maxElevation: 4783 })
+    expect(r.files[0]).toMatchObject({
+      imageUrl: `${API_BASE}/gltf/d/x_heightmap.png`,
+      worldFileUrl: `${API_BASE}/gltf/d/x_heightmap.pgw`,
+      prjUrl: `${API_BASE}/gltf/d/x_heightmap.prj`,
+      srid: 4326,
+    })
+    expect(r.zipUrl).toBe(`${API_BASE}/gltf/d/x_textures.zip`)
+    expect(r.minElevation).toBe(1713)
+    expect(r.attributions).toEqual([])
+  })
+
+  it('rejects an image without its georeferencing files', () => {
+    expect(() => toTextureResult({ requestId: 'r1', files: [{ ...file, worldFilePath: '' }], zipFilePath: '/z.zip' })).toThrow(/georeferencing/)
+  })
+
+  it('flags each estimate against the limit', () => {
+    const r = toTextureEstimates({
+      success: false,
+      maximumAllowedFileSizeMB: 100,
+      estimates: [
+        { kind: 'texture', width: 2000, height: 2000, estimatedSizeMB: 3 },
+        { kind: 'heightmap', width: 9000, height: 9000, estimatedSizeMB: 140 },
+      ],
+    })
+    expect(r.maxMB).toBe(100)
+    expect(r.estimates.map((e) => [e.kind, e.allowed])).toEqual([
+      ['texture', true],
+      ['heightmap', false],
+    ])
   })
 })
 

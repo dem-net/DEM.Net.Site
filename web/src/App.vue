@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { Heart, Menu, X } from '@lucide/vue'
 import BrandIcon from '@/components/BrandIcon.vue'
+import NewBadge from '@/components/NewBadge.vue'
 import { socialLinks } from '@/content/links'
 import logo from '@/assets/DEMnet_logo_long.png'
 import { useCatalog } from '@/composables/useCatalog'
@@ -14,9 +15,11 @@ watch(() => route.fullPath, () => (menuOpen.value = false))
 
 const { error: catalogError, retry } = useCatalog()
 
-const tools = [
+/** `isNew` shows a "New" badge: remove it once the tool is no longer new. */
+const tools: { to: string; label: string; isNew?: boolean }[] = [
   { to: '/terrain', label: 'Map to 3D' },
   { to: '/gpx', label: 'GPX to 3D' },
+  { to: '/textures', label: 'Textures', isNew: true },
   { to: '/elevation', label: 'Elevation' },
 ]
 /** Header shows contact channels; the footer also lists Sketchfab. */
@@ -44,10 +47,11 @@ const pages = [
             v-for="l in [...tools, ...pages]"
             :key="l.to"
             :to="l.to"
-            class="rounded-md px-3 py-1.5 text-sm text-ink-2 hover:bg-subtle hover:text-ink"
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-2 hover:bg-subtle hover:text-ink"
             active-class="!bg-accent-soft !text-accent font-medium"
           >
             {{ l.label }}
+            <NewBadge v-if="'isNew' in l && l.isNew" />
           </RouterLink>
         </div>
 
@@ -85,10 +89,11 @@ const pages = [
           v-for="l in tools"
           :key="l.to"
           :to="l.to"
-          class="block rounded-md px-2 py-2 text-ink"
+          class="flex items-center gap-2 rounded-md px-2 py-2 text-ink"
           active-class="text-accent font-medium"
         >
           {{ l.label }}
+          <NewBadge v-if="l.isNew" />
         </RouterLink>
         <div class="my-2 border-t border-line" />
         <RouterLink v-for="l in pages" :key="l.to" :to="l.to" class="block rounded-md px-2 py-2 text-ink-2">

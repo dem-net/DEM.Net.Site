@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { MapPinned, TriangleAlert, X } from '@lucide/vue'
-import type { ModelOptions } from '@/api/types'
 import { useCatalog } from '@/composables/useCatalog'
 import { datasetRegion, imageryRegion, SWISS_COUNTRIES } from '@/composables/region'
 
@@ -10,14 +9,17 @@ import { datasetRegion, imageryRegion, SWISS_COUNTRIES } from '@/composables/reg
  * - Regional dataset/imagery used outside its country: warn.
  * Based on the country at the centre of the area, so an area straddling a border may be misjudged.
  */
-const options = defineModel<ModelOptions>({ required: true })
-const props = defineProps<{ country: string | null }>()
+const dataset = defineModel<string>('dataset', { required: true })
+const imageryProvider = defineModel<string>('imageryProvider', { required: true })
+const props = defineProps<{
+  country: string | null
+  /** The imagery is used (textured glTF, or a texture image). */
+  usesImagery: boolean
+}>()
 
 const { datasets, imagery, datasetByName } = useCatalog()
 const dismissed = ref(false)
 watch(() => props.country, () => (dismissed.value = false))
-
-const usesTexture = computed(() => options.value.format === 'glTF' && options.value.textured)
 
 const swissDataset = computed(() => {
   const swiss = datasets.value.filter((d) => d.extentInfo === 'Switzerland')
@@ -30,23 +32,23 @@ const inSwitzerland = computed(() => !!props.country && SWISS_COUNTRIES.includes
 
 const suggestion = computed(() => {
   if (!inSwitzerland.value || dismissed.value || !swissDataset.value) return null
-  const needDataset = datasetRegion(datasetByName(options.value.dataset))?.name !== 'Switzerland'
-  const needImagery = usesTexture.value && !!swissImagery.value && options.value.imageryProvider !== swissImagery.value.name
+  const needDataset = datasetRegion(datasetByName(dataset.value))?.name !== 'Switzerland'
+  const needImagery = props.usesImagery && !!swissImagery.value && imageryProvider.value !== swissImagery.value.name
   if (!needDataset && !needImagery) return null
   return { needDataset, needImagery }
 })
 
 function useSwissData() {
-  if (suggestion.value?.needDataset && swissDataset.value) options.value.dataset = swissDataset.value.name
-  if (suggestion.value?.needImagery && swissImagery.value) options.value.imageryProvider = swissImagery.value.name
+  if (suggestion.value?.needDataset && swissDataset.value) dataset.value = swissDataset.value.name
+  if (suggestion.value?.needImagery && swissImagery.value) imageryProvider.value = swissImagery.value.name
 }
 
 const outOfRegion = computed(() => {
   if (!props.country) return []
   const issues: string[] = []
-  const dr = datasetRegion(datasetByName(options.value.dataset))
-  if (dr && !dr.countries.includes(props.country)) issues.push(`${options.value.dataset} elevation data only covers ${dr.name}`)
-  const ir = usesTexture.value ? imageryRegion(options.value.imageryProvider) : null
+  const dr = datasetRegion(datasetByName(dataset.value))
+  if (dr && !dr.countries.includes(props.country)) issues.push(`${dataset.value} elevation data only covers ${dr.name}`)
+  const ir = props.usesImagery ? imageryRegion(imageryProvider.value) : null
   if (ir && !ir.countries.includes(props.country)) issues.push(`this imagery only covers ${ir.name}`)
   return issues
 })

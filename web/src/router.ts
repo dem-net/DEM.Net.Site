@@ -16,6 +16,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'GPX to 3D', fullBleed: true },
   },
   {
+    path: '/textures',
+    name: 'textures',
+    component: () => import('./pages/TexturesPage.vue'),
+    meta: { title: 'Textures', fullBleed: true },
+  },
+  {
     path: '/elevation',
     name: 'elevation',
     component: () => import('./pages/ElevationPage.vue'),
