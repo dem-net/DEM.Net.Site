@@ -4,6 +4,7 @@ import BrandIcon from '@/components/BrandIcon.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 import { useCatalog } from '@/composables/useCatalog'
 import { socialLinks } from '@/content/links'
+import { releaseNotes } from '@/content/releaseNotes'
 
 const SWISSTOPO_TERMS = 'https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html'
 
@@ -55,6 +56,23 @@ const { datasets, imagery, loaded } = useCatalog()
     </section>
 
     <SupportBlock />
+
+    <section id="release-notes">
+      <h2 class="text-xl font-semibold">Release notes</h2>
+      <article v-for="r in releaseNotes" :key="r.date" class="card mt-4 px-5 py-4">
+        <h3 class="font-semibold">
+          <time :datetime="r.date">{{ r.title }}</time>
+        </h3>
+        <div class="mt-3 grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <div v-for="l in r.layers" :key="l.name">
+            <h4 class="field-label">{{ l.name }}</h4>
+            <ul class="list-disc space-y-1.5 pl-5 text-sm text-ink-2">
+              <li v-for="item in l.items" :key="item">{{ item }}</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </section>
 
     <section>
       <h2 class="text-xl font-semibold">Model formats</h2>

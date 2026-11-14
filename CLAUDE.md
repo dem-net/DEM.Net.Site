@@ -85,6 +85,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
 - **Theming**: color tokens are CSS variables in `src/style.css`, mapped to Tailwind colors (`bg-surface`, `text-ink-2`, `bg-accent`, …), with a dark palette applied through `prefers-color-scheme`. Use those tokens rather than raw colors. Buttons use `btn btn-primary` / `btn btn-secondary`.
 - **Content**:
   - `src/content/faq.md` is compiled into a Vue component by `unplugin-vue-markdown`.
+  - Release notes for the About page (`#release-notes`) live in `src/content/releaseNotes.ts`, newest first: one entry per period, short user-facing bullets per layer (Website, Elevation API, DEM.Net library, Audience measurement).
   - Every external social and sponsor link (GitHub, Discord, Bluesky, LinkedIn, Sketchfab, GitHub Sponsors, Patreon, PayPal) lives in `src/content/links.ts`. The header, footer, About and `SupportBlock` all read it.
   - Brand logos come from `BrandIcon.vue`, which uses `simple-icons` (CC0). LinkedIn is hand-drawn because simple-icons removed it. The site deliberately has no Twitter or Slack links.
 - **Regional data** (`src/composables/region.ts`, `RegionHint.vue`):
