@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   LngLatBounds,
@@ -9,7 +9,7 @@ import {
   type Map as MlMap,
   type MapMouseEvent,
 } from 'maplibre-gl'
-import { Box, Download, ExternalLink, History, LoaderCircle, Map as MapIcon, Pause, Play, RotateCw, X } from '@lucide/vue'
+import { Box, ChartColumn, Download, ExternalLink, History, List, LoaderCircle, Map as MapIcon, Pause, Play, RotateCw, X } from '@lucide/vue'
 import { api } from '@/api/client'
 import type { GenerationDetail, GenerationStats } from '@/api/types'
 import BaseMap from '@/components/map/BaseMap.vue'
@@ -265,12 +265,7 @@ function onReady(m: MlMap) {
   m.on('mousemove', (e) => {
     const found = featuresAt(e)
     m.getCanvas().style.cursor = found.length ? 'pointer' : ''
-    // Highlight the smallest area under the pointer: big ones would cover everything.
-    const area = (i: number) => {
-      const b = gens.value[i].bbox!
-      return (b.east - b.west) * (b.north - b.south)
-    }
-    const top = found.length ? found.reduce((a, b) => (area(b) < area(a) ? b : a)) : null
+    const top = smallest(found)
     setHovered(top === null ? null : { dataset: gens.value[top].dataset, id: top })
   })
   m.on('mouseout', () => setHovered(null))
@@ -304,13 +299,25 @@ function featuresAt(e: MapMouseEvent): number[] {
   return [...ids].sort((a, b) => gens.value[b].date.localeCompare(gens.value[a].date) || b - a)
 }
 
+/** The smallest area among these generation indexes: the one hovered and clicked (big ones would cover everything). */
+function smallest(found: number[]): number | null {
+  const area = (i: number) => {
+    const b = gens.value[i].bbox!
+    return (b.east - b.west) * (b.north - b.south)
+  }
+  return found.length ? found.reduce((a, b) => (area(b) < area(a) ? b : a)) : null
+}
+
+/** Other generations listed under the clicked one. */
 const POPUP_ROWS = 6
 
 // The popup content is rendered by Vue (hidden element below) and handed to MapLibre, so it updates
 // when the details (options, model URL) arrive.
 const popupEl = ref<HTMLElement>()
+/** The clicked generation first, then (some of) the others at that place, newest first. */
 const picked = ref<number[]>([])
-const pickedTotal = ref(0)
+/** Number of other generations at that place (not counting the clicked one). */
+const othersTotal = ref(0)
 /** Details by generation id (kept for the session). */
 const details = reactive(new Map<number, GenerationDetail>())
 const detailsState = ref<'idle' | 'loading' | 'failed'>('idle')
@@ -330,14 +337,21 @@ async function loadDetails(ids: number[]) {
   }
 }
 
+/** Opens the popup at `at` for generation `top`, followed by the `others` at that place (newest first). */
+function openPopup(top: number | null, others: number[], at: [number, number] | MapMouseEvent['lngLat']) {
+  popup?.remove()
+  if (top === null || !popupEl.value || !map.value) return
+  const rest = others.filter((i) => i !== top)
+  picked.value = [top, ...rest.slice(0, POPUP_ROWS)]
+  othersTotal.value = rest.length
+  loadDetails(picked.value.map((i) => gens.value[i].id).filter((id): id is number => id !== null))
+  popup = new Popup({ className: 'stats-popup', maxWidth: '300px' }).setLngLat(at).setDOMContent(popupEl.value).addTo(map.value)
+}
+
 function onClick(e: MapMouseEvent) {
   const found = featuresAt(e)
-  popup?.remove()
-  if (!found.length || !popupEl.value) return
-  picked.value = found.slice(0, POPUP_ROWS)
-  pickedTotal.value = found.length
-  loadDetails(picked.value.map((i) => gens.value[i].id).filter((id): id is number => id !== null))
-  popup = new Popup({ className: 'stats-popup', maxWidth: '300px' }).setLngLat(e.lngLat).setDOMContent(popupEl.value).addTo(map.value!)
+  // The clicked one is the highlighted one (computed again here: touch screens have no hover).
+  openPopup(smallest(found), found, e.lngLat)
 }
 
 function detailOf(i: number): GenerationDetail | undefined {
@@ -383,6 +397,50 @@ function zoomTo(dataset: string) {
   hidden.delete(dataset)
   m.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 800 })
 }
+
+// ---------- Latest generations (panel tab) ----------
+
+const tab = ref<'overview' | 'latest'>('overview')
+const LATEST_COUNT = 100
+
+/**
+ * The latest generations (up to the replay day), newest first, grouped by day.
+ * The API lists generations oldest first, by creation time, so the list order is the time order.
+ */
+const latestByDay = computed(() => {
+  const day = replayDay.value
+  const groups: { date: string; items: number[] }[] = []
+  let n = 0
+  for (let i = gens.value.length - 1; i >= 0 && n < LATEST_COUNT; i--) {
+    if (day !== null && !(days.value[i] <= day)) continue
+    const date = gens.value[i].date
+    if (groups.at(-1)?.date !== date) groups.push({ date, items: [] })
+    groups.at(-1)!.items.push(i)
+    n++
+  }
+  return groups
+})
+
+/** Zooms to a generation's area and opens its popup. */
+async function focus(i: number) {
+  const m = map.value
+  const b = gens.value[i].bbox
+  if (!m || !b) return
+  pause()
+  if (hidden.has(gens.value[i].dataset)) {
+    hidden.delete(gens.value[i].dataset)
+    // Let the visibility watcher run first: it closes the popup.
+    await nextTick()
+  }
+  m.fitBounds(
+    [
+      [b.west, b.south],
+      [b.east, b.north],
+    ],
+    { padding: 60, maxZoom: 13, duration: 800 },
+  )
+  openPopup(i, [], [(b.west + b.east) / 2, (b.south + b.north) / 2])
+}
 </script>
 
 <template>
@@ -396,7 +454,60 @@ function zoomTo(dataset: string) {
         <button type="button" class="btn btn-secondary" @click="load"><RotateCw class="size-4" /> Retry</button>
       </div>
 
-      <div v-if="stats" class="space-y-6">
+      <div v-if="stats" class="mb-5 grid grid-cols-2 rounded-lg bg-subtle p-1" role="tablist" aria-label="Statistics view">
+        <button
+          v-for="t in (['overview', 'latest'] as const)"
+          :id="`stats-tab-${t}`"
+          :key="t"
+          type="button"
+          role="tab"
+          :aria-selected="tab === t"
+          :aria-controls="`stats-panel-${t}`"
+          class="flex items-center justify-center gap-1.5 rounded-md py-1.5 text-sm font-medium"
+          :class="tab === t ? 'bg-surface text-ink shadow-sm' : 'text-ink-3 hover:text-ink'"
+          @click="tab = t"
+        >
+          <ChartColumn v-if="t === 'overview'" class="size-4" />
+          <List v-else class="size-4" />
+          {{ t === 'overview' ? 'Overview' : 'Latest' }}
+        </button>
+      </div>
+
+      <div v-if="stats && tab === 'latest'" id="stats-panel-latest" role="tabpanel" aria-labelledby="stats-tab-latest" class="space-y-4">
+        <p class="text-xs text-ink-3">
+          The {{ LATEST_COUNT }} latest generations, newest first<template v-if="replayDay !== null">, up to {{ formatDate(dayToDate(replayDay)) }}</template>.
+          Click one to see it on the map.
+        </p>
+        <p v-if="!latestByDay.length" class="text-sm text-ink-3">Nothing generated yet.</p>
+        <section v-for="g in latestByDay" :key="g.date" :aria-label="formatDate(g.date)">
+          <h2 class="field-label mb-1">{{ formatDate(g.date) }}</h2>
+          <ul class="-mx-2 space-y-0.5">
+            <li v-for="i in g.items" :key="i">
+              <button
+                type="button"
+                class="flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left enabled:hover:bg-subtle"
+                :disabled="!gens[i].bbox"
+                :title="gens[i].bbox ? 'Show on the map' : 'No area recorded for this generation'"
+                @click="focus(i)"
+              >
+                <span class="mt-1.5 size-2.5 shrink-0 rounded-sm" :style="{ background: colors.get(gens[i].dataset) }" aria-hidden="true" />
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-baseline justify-between gap-2 text-sm">
+                    <span class="truncate font-medium text-ink">{{ gens[i].dataset }}</span>
+                    <span v-if="gens[i].sizeBytes !== null" class="shrink-0 text-xs text-ink-3 tabular-nums">{{ formatBytes(gens[i].sizeBytes!) }}</span>
+                  </span>
+                  <span class="block truncate text-xs text-ink-3">
+                    {{ [KIND_LABELS[gens[i].kind], gens[i].format.replaceAll(',', ', ')].filter(Boolean).join(' · ') }}
+                  </span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
+        <p v-if="updatedAt" class="text-xs text-ink-3">Updated at {{ updatedAt }}.</p>
+      </div>
+
+      <div v-if="stats && tab === 'overview'" id="stats-panel-overview" role="tabpanel" aria-labelledby="stats-tab-overview" class="space-y-6">
         <section aria-label="Totals">
           <dl class="grid grid-cols-3 gap-2">
             <div class="rounded-lg border border-line p-3">
@@ -488,48 +599,52 @@ function zoomTo(dataset: string) {
       <!-- Popup content: rendered here, moved into the MapLibre popup on click -->
       <div class="hidden">
         <div ref="popupEl" class="space-y-2 text-xs">
-          <div class="font-semibold text-ink">{{ pickedTotal === 1 ? '1 generation here' : `${fmtInt(pickedTotal)} generations here` }}</div>
           <ul class="space-y-2">
-            <li v-for="i in picked" :key="i" class="flex items-start gap-2">
-              <span class="mt-0.5 size-2.5 shrink-0 rounded-sm" :style="{ background: colors.get(gens[i].dataset) }" />
-              <span class="min-w-0 flex-1">
-                <span class="block font-medium text-ink">{{ gens[i].dataset }} · {{ KIND_LABELS[gens[i].kind] }}</span>
-                <span class="block text-ink-3">
-                  {{
-                    [gens[i].format.replaceAll(',', ', '), gens[i].sizeBytes !== null ? formatBytes(gens[i].sizeBytes!) : null, formatDate(gens[i].date)]
-                      .filter(Boolean)
-                      .join(' · ')
-                  }}
+            <template v-for="(i, n) in picked" :key="i">
+              <li v-if="n === 1" class="border-t border-line pt-2 font-semibold text-ink-2" role="separator">
+                {{ othersTotal === 1 ? '1 other generation here' : `${fmtInt(othersTotal)} other generations here` }}
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="mt-0.5 size-2.5 shrink-0 rounded-sm" :style="{ background: colors.get(gens[i].dataset) }" />
+                <span class="min-w-0 flex-1">
+                  <span class="block font-medium text-ink">{{ gens[i].dataset }} · {{ KIND_LABELS[gens[i].kind] }}</span>
+                  <span class="block text-ink-3">
+                    {{
+                      [gens[i].format.replaceAll(',', ', '), gens[i].sizeBytes !== null ? formatBytes(gens[i].sizeBytes!) : null, formatDate(gens[i].date)]
+                        .filter(Boolean)
+                        .join(' · ')
+                    }}
+                  </span>
+                  <span v-if="regenerate(i) || detailOf(i)?.modelUrl" class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                    <button
+                      v-if="detailOf(i)?.modelUrl"
+                      type="button"
+                      class="inline-flex items-center gap-1 font-medium text-accent hover:underline"
+                      @click="view(i)"
+                    >
+                      <Box class="size-3.5" /> View 3D
+                    </button>
+                    <a
+                      v-if="regenerate(i)"
+                      :href="regenerate(i)!.href"
+                      target="_blank"
+                      rel="noopener"
+                      class="inline-flex items-center gap-1 font-medium text-accent hover:underline"
+                      :title="regenerate(i)!.areaOnly ? 'The GPX track is not kept: opens the same area in Map to 3D' : 'Opens a new tab with the same area and settings'"
+                    >
+                      <ExternalLink class="size-3.5" /> {{ regenerate(i)!.areaOnly ? 'Same area in Map to 3D' : 'Generate again' }}
+                    </a>
+                  </span>
                 </span>
-                <span v-if="regenerate(i) || detailOf(i)?.modelUrl" class="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                  <button
-                    v-if="detailOf(i)?.modelUrl"
-                    type="button"
-                    class="inline-flex items-center gap-1 font-medium text-accent hover:underline"
-                    @click="view(i)"
-                  >
-                    <Box class="size-3.5" /> View 3D
-                  </button>
-                  <a
-                    v-if="regenerate(i)"
-                    :href="regenerate(i)!.href"
-                    target="_blank"
-                    rel="noopener"
-                    class="inline-flex items-center gap-1 font-medium text-accent hover:underline"
-                    :title="regenerate(i)!.areaOnly ? 'The GPX track is not kept: opens the same area in Map to 3D' : 'Opens a new tab with the same area and settings'"
-                  >
-                    <ExternalLink class="size-3.5" /> {{ regenerate(i)!.areaOnly ? 'Same area in Map to 3D' : 'Generate again' }}
-                  </a>
-                </span>
-              </span>
-            </li>
+              </li>
+            </template>
           </ul>
           <p v-if="detailsState === 'loading'" class="flex items-center gap-1.5 text-ink-3">
             <LoaderCircle class="size-3 animate-spin" /> Loading options…
           </p>
           <p v-else-if="detailsState === 'failed'" class="text-ink-3">Options unavailable right now.</p>
-          <p v-if="pickedTotal > picked.length" class="text-ink-3">
-            and {{ fmtInt(pickedTotal - picked.length) }} more. Zoom in to separate them.
+          <p v-if="othersTotal > picked.length - 1" class="text-ink-3">
+            and {{ fmtInt(othersTotal - (picked.length - 1)) }} more. Zoom in to separate them.
           </p>
         </div>
       </div>
