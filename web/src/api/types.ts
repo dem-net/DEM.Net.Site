@@ -47,19 +47,12 @@ export interface ElevationResponse {
   metrics?: LineMetrics
 }
 
-interface FileRef {
-  filePath: string
-}
-
 export interface AssetInfo {
   requestId: string
   modelFile: string
   modelFileSizeMB: number
   minElevation: number
   maxElevation: number
-  heightMap?: FileRef | null
-  albedoTexture?: FileRef | null
-  normalMapTexture?: FileRef | null
   attributions: Attribution[]
 }
 
@@ -113,12 +106,53 @@ export interface ModelResult {
   sizeMB: number
   minElevation: number
   maxElevation: number
-  heightMapUrl: string | null
-  albedoUrl: string | null
-  normalMapUrl: string | null
   /** OBJ export (ZIP: .obj + .mtl + texture), converted server-side from the generated glTF. */
   objUrl: string | null
   attributions: Attribution[]
+}
+
+/** Images of the textures endpoint (`/api/texture/bbox/…`). */
+export type TextureKind = 'texture' | 'normalmap' | 'heightmap'
+
+export const TEXTURE_KINDS: readonly TextureKind[] = ['texture', 'normalmap', 'heightmap']
+
+export interface TextureOptions {
+  /** Elevation dataset, for the normal map and height map. */
+  dataset: string
+  /** Imagery, for the texture. */
+  imageryProvider: string
+  textureQuality: 1 | 2 | 3
+}
+
+/** A generated image with its georeferencing files (always present). */
+export interface TextureFile {
+  kind: TextureKind
+  imageUrl: string
+  worldFileUrl: string
+  prjUrl: string
+  /** EPSG code of the world file. */
+  srid: number
+  width: number
+  height: number
+  sizeMB: number
+}
+
+export interface TextureSetResult {
+  id: string
+  files: TextureFile[]
+  /** Every image, its georeferencing files and metadata.json. */
+  zipUrl: string
+  minElevation: number | null
+  maxElevation: number | null
+  attributions: Attribution[]
+}
+
+export interface TextureEstimate {
+  kind: TextureKind
+  width: number
+  height: number
+  sizeMB: number
+  allowed: boolean
 }
 
 export interface SketchfabExportRequest {

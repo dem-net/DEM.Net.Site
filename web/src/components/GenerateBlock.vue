@@ -1,22 +1,27 @@
 <script setup lang="ts">
 import { Box, LoaderCircle } from '@lucide/vue'
 
-defineProps<{
-  disabled?: boolean
-  disabledReason?: string
-  busy: boolean
-  status: string
-  percent: number
-  error: string | null
-  hasResult?: boolean
-}>()
+withDefaults(
+  defineProps<{
+    /** Primary button text. */
+    label?: string
+    disabled?: boolean
+    disabledReason?: string
+    busy: boolean
+    status: string
+    percent: number
+    error: string | null
+    hasResult?: boolean
+  }>(),
+  { label: 'Generate 3D model' },
+)
 const emit = defineEmits<{ generate: []; cancel: []; show: [] }>()
 </script>
 
 <template>
   <div class="space-y-3">
     <button v-if="!busy" type="button" class="btn btn-primary w-full py-2.5" :disabled="disabled" @click="emit('generate')">
-      <Box class="size-4" /> Generate 3D model
+      <Box class="size-4" /> {{ label }}
     </button>
     <p v-if="!busy && disabled && disabledReason" class="text-center text-xs text-ink-3">{{ disabledReason }}</p>
 

@@ -65,6 +65,10 @@ const { datasets, imagery, loaded } = useCatalog()
           <strong class="text-ink">OBJ</strong>: available as a download (ZIP with the mesh, material and texture) for glTF models,
           for software that doesn't read glTF.
         </li>
+        <li>
+          <strong class="text-ink">Textures</strong>: the satellite texture, a normal map and a 16-bit height map of any area, each with a
+          world file and a .prj for GIS software, on the <RouterLink to="/textures" class="text-accent underline">Textures</RouterLink> page.
+        </li>
       </ul>
     </section>
 

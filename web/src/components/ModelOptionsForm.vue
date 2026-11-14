@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { ChevronDown } from '@lucide/vue'
 import { MIN_MESH_DETAIL } from '@/api/client'
 import type { ModelOptions } from '@/api/types'
-import { useCatalog } from '@/composables/useCatalog'
 import DatasetSelect from './DatasetSelect.vue'
+import ImageryFields from './ImageryFields.vue'
 import RegionHint from './RegionHint.vue'
 import ToggleSwitch from './ToggleSwitch.vue'
 
@@ -18,10 +18,8 @@ const props = withDefaults(
   { allowStl: true, country: null },
 )
 
-const { imagery } = useCatalog()
 const advanced = ref(false)
 const isGltf = computed(() => options.value.format === 'glTF')
-const qualityLabels = { 1: 'Low', 2: 'Medium', 3: 'High' } as const
 
 const formats = computed(() => [
   { value: 'glTF' as const, label: 'glTF (GLB)', hint: 'Textured, for viewers & 3D apps' },
@@ -32,7 +30,12 @@ const formats = computed(() => [
 <template>
   <div class="space-y-4">
     <DatasetSelect v-model="options.dataset" />
-    <RegionHint v-model="options" :country="props.country" />
+    <RegionHint
+      v-model:dataset="options.dataset"
+      v-model:imagery-provider="options.imageryProvider"
+      :country="props.country"
+      :uses-imagery="isGltf && options.textured"
+    />
 
     <fieldset v-if="formats.length > 1">
       <legend class="field-label">Format</legend>
@@ -69,44 +72,7 @@ const formats = computed(() => [
 
     <template v-if="isGltf">
       <ToggleSwitch v-model="options.textured" label="Satellite texture" hint="Drape imagery over the terrain" />
-      <div v-if="options.textured">
-        <label class="field-label" for="imagery">Imagery</label>
-        <select id="imagery" v-model="options.imageryProvider" class="input">
-          <option v-for="p in imagery" :key="p.name" :value="p.name">{{ p.attribution?.text || p.name }}</option>
-        </select>
-      </div>
-      <div v-if="options.textured">
-        <label class="field-label" for="quality">Texture quality</label>
-        <input
-          id="quality"
-          v-model.number="options.textureQuality"
-          type="range"
-          min="1"
-          max="3"
-          step="1"
-          class="w-full accent-[var(--c-accent)]"
-          :aria-valuetext="qualityLabels[options.textureQuality]"
-          aria-describedby="quality-hint"
-        />
-        <!-- Tick labels under the slider, as in the previous site; clicking one selects it. -->
-        <div class="mt-0.5 grid grid-cols-3 text-xs" aria-hidden="true">
-          <button
-            v-for="q in ([1, 2, 3] as const)"
-            :key="q"
-            type="button"
-            tabindex="-1"
-            class="hover:text-ink"
-            :class="[
-              q === 1 ? 'text-left' : q === 2 ? 'text-center' : 'text-right',
-              options.textureQuality === q ? 'font-medium text-ink' : 'text-ink-3',
-            ]"
-            @click="options.textureQuality = q"
-          >
-            {{ qualityLabels[q] }}
-          </button>
-        </div>
-        <p id="quality-hint" class="mt-1 text-xs text-ink-3">Higher quality means sharper imagery, bigger files and longer generation.</p>
-      </div>
+      <ImageryFields v-if="options.textured" v-model:provider="options.imageryProvider" v-model:quality="options.textureQuality" />
     </template>
 
     <div>

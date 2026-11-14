@@ -2,15 +2,15 @@ import { computed, ref, shallowRef } from 'vue'
 import { ensureConnected, useProgress } from '@/api/hub'
 import type { ModelResult } from '@/api/types'
 
-/** Runs a model generation request with server progress, cancellation and error state. */
-export function useGenerate() {
+/** Runs a generation request (a model by default) with server progress, cancellation and error state. */
+export function useGenerate<T = ModelResult>() {
   const { progress, reset } = useProgress('generate')
   const busy = ref(false)
   const error = ref<string | null>(null)
-  const result = shallowRef<ModelResult | null>(null)
+  const result = shallowRef<T | null>(null)
   let controller: AbortController | null = null
 
-  async function run(call: (connectionId: string | null, signal: AbortSignal) => Promise<ModelResult>) {
+  async function run(call: (connectionId: string | null, signal: AbortSignal) => Promise<T>) {
     controller?.abort()
     controller = new AbortController()
     busy.value = true
