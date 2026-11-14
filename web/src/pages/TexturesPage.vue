@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Download, ExternalLink, FileArchive, Image as ImageIcon, LoaderCircle, Mountain, Sparkles } from '@lucide/vue'
 import { api, safeUrl } from '@/api/client'
 import { saveFile } from '@/api/download'
@@ -14,13 +15,43 @@ import RegionHint from '@/components/RegionHint.vue'
 import StepBlock from '@/components/StepBlock.vue'
 import ToolLayout from '@/components/ToolLayout.vue'
 import { useAreaPicker } from '@/composables/useAreaPicker'
-import { DEFAULT_DATASET, DEFAULT_IMAGERY } from '@/composables/useCatalog'
+import { DEFAULT_DATASET, DEFAULT_IMAGERY, useCatalog } from '@/composables/useCatalog'
+import { optionsFromQuery } from '@/composables/shareLink'
 import { useCountry } from '@/composables/region'
 import { useGenerate } from '@/composables/useGenerate'
 import { textureKey, useTextureEstimate } from '@/composables/useTextureEstimate'
 
 const area = useAreaPicker()
-const options = reactive<TextureOptions>({ dataset: DEFAULT_DATASET, imageryProvider: DEFAULT_IMAGERY, textureQuality: 2 })
+// A link (e.g. "Generate again" on the statistics page) can set the dataset, imagery and quality.
+const route = useRoute()
+const router = useRouter()
+const LINK_KEYS = ['dataset', 'imagery', 'quality'] as const
+const linked = optionsFromQuery(route.query)
+const options = reactive<TextureOptions>({
+  dataset: linked.dataset ?? DEFAULT_DATASET,
+  imageryProvider: linked.imageryProvider ?? DEFAULT_IMAGERY,
+  textureQuality: linked.textureQuality ?? 2,
+})
+
+// Names from a link are only trusted once the catalog confirms them.
+const catalog = useCatalog()
+watch(
+  catalog.loaded,
+  (loaded) => {
+    if (!loaded) return
+    if (!catalog.datasetByName(options.dataset)) options.dataset = DEFAULT_DATASET
+    if (!catalog.imageryByName(options.imageryProvider)) options.imageryProvider = DEFAULT_IMAGERY
+  },
+  { immediate: true },
+)
+
+// Once applied, drop them from the address bar (only ?bbox= stays live).
+onMounted(() => {
+  if (!LINK_KEYS.some((k) => k in route.query)) return
+  const query = { ...route.query }
+  for (const k of LINK_KEYS) delete query[k]
+  router.replace({ query })
+})
 
 const country = useCountry(() => {
   const b = area.bbox.value

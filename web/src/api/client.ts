@@ -6,6 +6,7 @@ import type {
   Dataset,
   ElevationResponse,
   Generation,
+  GenerationDetail,
   GenerationStats,
   ImageryProvider,
   ModelOptions,
@@ -238,8 +239,8 @@ const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFin
 /** Reads the rows by column name; malformed rows are dropped. */
 export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
   const col = (name: string) => r.columns.indexOf(name)
-  const [ds, kind, format, size, date, w, s, e, n] = [
-    'dataset', 'kind', 'format', 'sizeBytes', 'date', 'west', 'south', 'east', 'north',
+  const [id, ds, kind, format, size, date, w, s, e, n] = [
+    'id', 'dataset', 'kind', 'format', 'sizeBytes', 'date', 'west', 'south', 'east', 'north',
   ].map(col)
   const generations: Generation[] = []
   for (const row of r.rows ?? []) {
@@ -247,6 +248,7 @@ export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
     if (typeof row[ds] !== 'string' || !GENERATION_KINDS.includes(k) || typeof row[date] !== 'string') continue
     const box = [row[w], row[s], row[e], row[n]]
     generations.push({
+      id: id >= 0 && isNum(row[id]) ? row[id] : null,
       dataset: row[ds] as string,
       kind: k,
       format: typeof row[format] === 'string' ? (row[format] as string) : '',
@@ -272,6 +274,15 @@ export const api = {
 
   /** Every successful model and texture generation (public statistics, refreshed every minute by the API). */
   generationStats: async () => toGenerationStats(await request<GenerationStatsResponse>('/api/stats/generations')),
+
+  /** Options and model URL of up to 20 generations. */
+  async generationDetails(ids: number[], signal?: AbortSignal): Promise<GenerationDetail[]> {
+    const rows = await request<{ id: number; options?: Record<string, string> | null; modelUrl?: string | null }[]>(
+      `/api/stats/generations/details?${query({ ids: ids.join(',') })}`,
+      { signal },
+    )
+    return rows.map((r) => ({ id: r.id, options: r.options ?? {}, modelUrl: safeUrl(absoluteUrl(r.modelUrl)) ?? null }))
+  },
 
   pointElevation: (lat: number, lon: number, dataSet: string) =>
     request<ElevationResponse>(`/api/elevation?${query({ lat, lon, dataSet })}`),

@@ -1,7 +1,7 @@
 import type { LocationQuery } from 'vue-router'
-import type { ModelOptions } from '@/api/types'
+import type { ModelOptions, OsmOptions } from '@/api/types'
 import type { Basemap, MapState, MapView } from '@/components/map/mapContext'
-import { MODEL_DEFAULTS } from './useModelOptions'
+import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
 
 /**
  * Share links for Map to 3D. Next to the existing `bbox` (and `osm`), a link carries:
@@ -9,11 +9,15 @@ import { MODEL_DEFAULTS } from './useModelOptions'
  *   basemap=topo|streets               basemap
  *   relief=1                           3D relief on
  *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, adornments=0   model options that differ from the defaults
+ *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, pistes=1, osmonly=1        OSM options that differ from the defaults (with osm=1)
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
  */
 
 /** Query keys owned by share links (removed from the address bar once applied). */
-export const SHARE_KEYS = ['map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'adornments'] as const
+export const SHARE_KEYS = [
+  'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'adornments',
+  'buildings', 'buildingcolors', 'buildingcolor', 'pistes', 'osmonly',
+] as const
 
 type Query = Record<string, string>
 
@@ -94,5 +98,37 @@ export function optionsFromQuery(q: LocationQuery): Partial<ModelOptions> {
   if (first(q, 'detail') && Number.isInteger(detail) && detail >= 10 && detail <= 100) o.meshDetail = detail
   const adornments = first(q, 'adornments')
   if (adornments === '0' || adornments === '1') o.adornments = adornments === '1'
+  return o
+}
+
+const HEX_COLOR = /^#[0-9a-f]{6}$/i
+
+export function osmToQuery(o: OsmOptions): Query {
+  const d = OSM_DEFAULTS
+  const q: Query = {}
+  if (o.osmBuildings !== d.osmBuildings) q.buildings = o.osmBuildings ? '1' : '0'
+  if (o.useOsmBuildingsColor !== d.useOsmBuildingsColor) q.buildingcolors = o.useOsmBuildingsColor ? '1' : '0'
+  if (o.buildingsColor.toLowerCase() !== d.buildingsColor && HEX_COLOR.test(o.buildingsColor)) q.buildingcolor = o.buildingsColor.toLowerCase()
+  if (o.osmPistesSki !== d.osmPistesSki) q.pistes = o.osmPistesSki ? '1' : '0'
+  if (o.osmOnly !== d.osmOnly) q.osmonly = o.osmOnly ? '1' : '0'
+  return q
+}
+
+export function osmFromQuery(q: LocationQuery): Partial<OsmOptions> {
+  const o: Partial<OsmOptions> = {}
+  const flag = (key: string) => {
+    const v = first(q, key)
+    return v === '0' || v === '1' ? v === '1' : undefined
+  }
+  const buildings = flag('buildings')
+  if (buildings !== undefined) o.osmBuildings = buildings
+  const colors = flag('buildingcolors')
+  if (colors !== undefined) o.useOsmBuildingsColor = colors
+  const color = first(q, 'buildingcolor')
+  if (color && HEX_COLOR.test(color)) o.buildingsColor = color.toLowerCase()
+  const pistes = flag('pistes')
+  if (pistes !== undefined) o.osmPistesSki = pistes
+  const only = flag('osmonly')
+  if (only !== undefined) o.osmOnly = only
   return o
 }

@@ -174,6 +174,8 @@ export const GENERATION_KINDS: readonly GenerationKind[] = ['terrain', 'osm', 'g
 
 /** One successful model or texture generation, from the public statistics. */
 export interface Generation {
+  /** Id for GET /api/stats/generations/details; null with an older API. */
+  id: number | null
   dataset: string
   kind: GenerationKind
   /** glTF or STL for models; the generated images (e.g. "texture,heightmap") for textures. */
@@ -189,4 +191,13 @@ export interface Generation {
 export interface GenerationStats {
   updatedAt: string
   generations: Generation[]
+}
+
+/** Options and model of one generation (GET /api/stats/generations/details). */
+export interface GenerationDetail {
+  id: number
+  /** Request options as sent to the API (allowlisted parameters, string values, not validated). */
+  options: Record<string, string>
+  /** Absolute model URL while the file is kept (never for GPX models); null otherwise. */
+  modelUrl: string | null
 }

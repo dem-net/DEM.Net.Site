@@ -4,6 +4,8 @@ import type { Generation } from '@/api/types'
 import {
   datasetColors,
   datasetFeatures,
+  dayNumber,
+  dayToDate,
   formatBytes,
   formatDate,
   OTHER_COLOR,
@@ -28,23 +30,24 @@ describe('toGenerationStats', () => {
       ],
     })
     expect(r.generations).toEqual([
-      { dataset: 'SRTM_GL3', kind: 'terrain', format: 'glTF', sizeBytes: 603656, date: '2026-11-14', bbox: { west: 6.82, south: 45.8, east: 6.91, north: 45.86 } },
-      { dataset: 'SRTM_GL3', kind: 'gpx', format: 'glTF', sizeBytes: 480000, date: '2026-06-02', bbox: null },
-      { dataset: 'SRTM_GL3', kind: 'textures', format: 'heightmap', sizeBytes: null, date: '2026-07-01', bbox: { west: 1, south: 2, east: 3, north: 4 } },
+      { id: null, dataset: 'SRTM_GL3', kind: 'terrain', format: 'glTF', sizeBytes: 603656, date: '2026-11-14', bbox: { west: 6.82, south: 45.8, east: 6.91, north: 45.86 } },
+      { id: null, dataset: 'SRTM_GL3', kind: 'gpx', format: 'glTF', sizeBytes: 480000, date: '2026-06-02', bbox: null },
+      { id: null, dataset: 'SRTM_GL3', kind: 'textures', format: 'heightmap', sizeBytes: null, date: '2026-07-01', bbox: { west: 1, south: 2, east: 3, north: 4 } },
     ])
   })
 
   it('follows the column order the API sends', () => {
     const r = toGenerationStats({
       updatedAt: '',
-      columns: ['date', 'dataset', 'kind', 'format', 'sizeBytes', 'north', 'south', 'east', 'west'],
-      rows: [['2026-06-02', 'AW3D30', 'osm', 'glTF', 10, 4, 2, 3, 1]],
+      columns: ['date', 'dataset', 'kind', 'format', 'sizeBytes', 'north', 'south', 'east', 'west', 'id'],
+      rows: [['2026-06-02', 'AW3D30', 'osm', 'glTF', 10, 4, 2, 3, 1, 42]],
     })
-    expect(r.generations[0]).toMatchObject({ dataset: 'AW3D30', kind: 'osm', bbox: { west: 1, south: 2, east: 3, north: 4 } })
+    expect(r.generations[0]).toMatchObject({ id: 42, dataset: 'AW3D30', kind: 'osm', bbox: { west: 1, south: 2, east: 3, north: 4 } })
   })
 })
 
 const g = (dataset: string, kind: Generation['kind'], sizeBytes: number | null, date: string, mapped = true): Generation => ({
+  id: null,
   dataset,
   kind,
   format: 'glTF',
@@ -90,8 +93,23 @@ describe('datasetFeatures', () => {
   it('builds footprints and centres of one dataset, indexed into the full list', () => {
     const { footprints, centres } = datasetFeatures(sample, 'B')
     expect(footprints.features.map((f) => f.properties.i)).toEqual([1, 3]) // the GPX one has no area
+    expect(footprints.features.map((f) => f.id)).toEqual([1, 3])
+    expect(footprints.features[0].properties.d).toBe(dayNumber('2026-06-02'))
     expect(footprints.features[0].geometry.coordinates[0]).toEqual([[0, 0], [2, 0], [2, 1], [0, 1], [0, 0]])
     expect(centres.features[0].geometry.coordinates).toEqual([1, 0.5])
+  })
+
+  it('puts the largest areas first, so small ones are drawn on top', () => {
+    const big = { ...g('A', 'terrain', 1, '2026-07-01'), bbox: { west: 0, south: 0, east: 10, north: 10 } }
+    const small = { ...g('A', 'terrain', 1, '2026-07-01'), bbox: { west: 1, south: 1, east: 2, north: 2 } }
+    expect(datasetFeatures([small, big], 'A').footprints.features.map((f) => f.id)).toEqual([1, 0])
+  })
+})
+
+describe('day numbers', () => {
+  it('round-trips dates', () => {
+    expect(dayNumber('1970-01-02')).toBe(1)
+    expect(dayToDate(dayNumber('2026-06-02'))).toBe('2026-06-02')
   })
 })
 
