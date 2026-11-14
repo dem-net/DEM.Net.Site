@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { LoaderCircle } from '@lucide/vue'
+import { Grid3x3, LoaderCircle } from '@lucide/vue'
 import * as THREE from 'three'
 import { STLLoader } from 'three/addons/loaders/STLLoader.js'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { setWireframe } from './wireframe'
 
 /** Minimal STL preview (model-viewer only reads glTF). */
 const props = defineProps<{ src: string }>()
@@ -12,6 +13,7 @@ const host = ref<HTMLDivElement>()
 const progress = ref(0)
 const loaded = ref(false)
 const failed = ref(false)
+const wireframe = ref(false)
 
 let renderer: THREE.WebGLRenderer | null = null
 let controls: OrbitControls | null = null
@@ -46,6 +48,7 @@ function load(url: string) {
       geometry.center()
       mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0xc9c2b4, roughness: 0.9, flatShading: false }))
       scene.add(mesh)
+      if (wireframe.value) setWireframe(mesh, true)
       geometry.computeBoundingSphere()
       const r = geometry.boundingSphere!.radius
       camera.near = r / 100
@@ -88,6 +91,7 @@ onMounted(() => {
 })
 
 watch(() => props.src, load)
+watch(wireframe, (on) => mesh && setWireframe(mesh, on))
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(raf)
@@ -108,5 +112,17 @@ onBeforeUnmount(() => {
     <p v-if="failed" class="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-danger">
       The preview could not be loaded. You can still download the model.
     </p>
+    <div v-if="loaded" class="absolute right-2 bottom-2 flex gap-1">
+      <button
+        type="button"
+        class="rounded-md bg-surface/80 p-1.5 text-ink-2 backdrop-blur hover:text-ink"
+        :class="wireframe ? 'text-accent' : ''"
+        :aria-pressed="wireframe"
+        title="Wireframe"
+        @click="wireframe = !wireframe"
+      >
+        <Grid3x3 class="size-4" />
+      </button>
+    </div>
   </div>
 </template>
