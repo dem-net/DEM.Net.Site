@@ -19,7 +19,7 @@ export const releaseNotes: ReleaseNotes[] = [
         items: [
           'Rebuilt from scratch: faster, works on phones, follows your light or dark theme.',
           'New Textures page: a georeferenced texture, normal map and 16-bit height map of any area, one by one or as a ZIP.',
-          'New Statistics page: every model and texture set generated, mapped per dataset, with a replay of the history. View recent models in 3D, or generate the same one again.',
+          'New Statistics page: every model and texture set generated, mapped per dataset, with a replay of the history and a list of the 100 latest generations. View recent models in 3D, or generate the same one again.',
           'Map to 3D: a Share button (the link keeps the area, the map view and your options), and a size estimate before you generate.',
           '3D previews: wireframe view, optional scale bar and north arrow, better default lighting. The TIN option is gone.',
           'No more Google Analytics: visits are measured without cookies, and a Privacy page explains what is recorded.',
