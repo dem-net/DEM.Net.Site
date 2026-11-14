@@ -17,12 +17,14 @@ export function useModelOptions(overrides: Partial<ModelOptions> = {}) {
   return reactive<ModelOptions>({ ...MODEL_DEFAULTS, ...overrides })
 }
 
-export function useOsmOptions() {
-  return reactive<OsmOptions>({
-    osmBuildings: true,
-    useOsmBuildingsColor: false,
-    buildingsColor: '#945200',
-    osmPistesSki: false,
-    osmOnly: false,
-  })
+export const OSM_DEFAULTS: Readonly<OsmOptions> = Object.freeze({
+  osmBuildings: true,
+  useOsmBuildingsColor: false,
+  buildingsColor: '#945200',
+  osmPistesSki: false,
+  osmOnly: false,
+})
+
+export function useOsmOptions(overrides: Partial<OsmOptions> = {}) {
+  return reactive<OsmOptions>({ ...OSM_DEFAULTS, ...overrides })
 }

@@ -51,8 +51,11 @@ const optedOut = document.cookie.split('; ').includes('analytics_optout=1')
       <h2 class="text-xl font-semibold">Public statistics</h2>
       <p class="mt-3 text-ink-2">
         For each model or texture set generated successfully, the Elevation API keeps its area, the dataset, the type of output, the
-        file size and the date, and shows them to everyone on the <RouterLink to="/stats" class="text-accent hover:underline">statistics</RouterLink>
-        page. Nothing that identifies who made the request is stored with them: no IP address and no GPX file name.
+        options it was made with, the file size and the date, and shows them to everyone on the
+        <RouterLink to="/stats" class="text-accent hover:underline">statistics</RouterLink> page, where anyone can generate the same
+        thing again. While a generated 3D model is still kept on the server (it is deleted after a few weeks), it can also be viewed
+        there, except models made from a GPX file, which show the track. Nothing that identifies who made the request is stored with
+        them: no IP address and no GPX file name.
       </p>
     </section>
 

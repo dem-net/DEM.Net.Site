@@ -15,7 +15,15 @@ import ToggleSwitch from '@/components/ToggleSwitch.vue'
 import ToolLayout from '@/components/ToolLayout.vue'
 import { useAreaPicker } from '@/composables/useAreaPicker'
 import { DEFAULT_DATASET, DEFAULT_IMAGERY, useCatalog } from '@/composables/useCatalog'
-import { mapStateFromQuery, mapStateToQuery, optionsFromQuery, optionsToQuery, SHARE_KEYS } from '@/composables/shareLink'
+import {
+  mapStateFromQuery,
+  mapStateToQuery,
+  optionsFromQuery,
+  optionsToQuery,
+  osmFromQuery,
+  osmToQuery,
+  SHARE_KEYS,
+} from '@/composables/shareLink'
 import { useGenerate } from '@/composables/useGenerate'
 import { useModelOptions, useOsmOptions } from '@/composables/useModelOptions'
 import { useSizeEstimate } from '@/composables/useSizeEstimate'
@@ -54,13 +62,13 @@ function shareUrl(): string {
   const state = baseMap.value?.getState()
   const query = {
     ...(area.bbox.value && { bbox: bboxToPath(area.bbox.value) }),
-    ...(withOsm.value && { osm: '1' }),
+    ...(withOsm.value && { osm: '1', ...osmToQuery(osm) }),
     ...(state && mapStateToQuery(state)),
     ...optionsToQuery(options),
   }
   return new URL(router.resolve({ path: route.path, query }).href, location.origin).href
 }
-const osm = useOsmOptions()
+const osm = useOsmOptions(osmFromQuery(route.query))
 /** OSM features (buildings, ski pistes) are temporarily disabled. Set to true to bring them back. */
 const OSM_AVAILABLE = false
 const withOsm = ref(OSM_AVAILABLE && route.query.osm === '1')

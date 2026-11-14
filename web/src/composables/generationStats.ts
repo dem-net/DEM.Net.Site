@@ -72,26 +72,43 @@ export function datasetColors(ranked: readonly string[]): Map<string, string> {
   return new Map(ranked.map((d, i) => [d, SERIES_COLORS[i] ?? OTHER_COLOR]))
 }
 
-type Props = { i: number }
+/** Days since 1970-01-01 for a yyyy-mm-dd date (NaN if invalid), for the replay filter. */
+export function dayNumber(isoDate: string): number {
+  return Math.floor(Date.parse(`${isoDate}T00:00:00Z`) / 86_400_000)
+}
+
+/** yyyy-mm-dd of a day number. */
+export function dayToDate(day: number): string {
+  return new Date(day * 86_400_000).toISOString().slice(0, 10)
+}
+
+/** `i`: index in the generation list; `d`: day number of the generation. */
+type Props = { i: number; d: number }
 
 /**
  * Footprints (polygons) and their centres (points, readable at world zoom where most footprints are
- * smaller than a pixel) for one dataset. Feature property `i` is the index in `gens`.
+ * smaller than a pixel) for one dataset. Feature ids are indexes in `gens` (for hover feature-state).
+ * Largest areas come first, so smaller ones are drawn, and hovered, on top of them.
  */
 export function datasetFeatures(gens: readonly Generation[], dataset: string) {
+  const items = gens
+    .map((g, i) => ({ g, i }))
+    .filter(({ g }) => g.dataset === dataset && g.bbox)
+    .map(({ g, i }) => ({ g, i, area: (g.bbox!.east - g.bbox!.west) * (g.bbox!.north - g.bbox!.south) }))
+    .sort((a, b) => b.area - a.area || a.i - b.i)
   const footprints: GeoJSON.Feature<GeoJSON.Polygon, Props>[] = []
   const centres: GeoJSON.Feature<GeoJSON.Point, Props>[] = []
-  gens.forEach((g, i) => {
-    if (g.dataset !== dataset || !g.bbox) return
-    const { west: w, south: s, east: e, north: n } = g.bbox
-    const properties = { i }
+  for (const { g, i } of items) {
+    const { west: w, south: s, east: e, north: n } = g.bbox!
+    const properties = { i, d: dayNumber(g.date) }
     footprints.push({
       type: 'Feature',
+      id: i,
       properties,
       geometry: { type: 'Polygon', coordinates: [[[w, s], [e, s], [e, n], [w, n], [w, s]]] },
     })
-    centres.push({ type: 'Feature', properties, geometry: { type: 'Point', coordinates: [(w + e) / 2, (s + n) / 2] } })
-  })
+    centres.push({ type: 'Feature', id: i, properties, geometry: { type: 'Point', coordinates: [(w + e) / 2, (s + n) / 2] } })
+  }
   return {
     footprints: { type: 'FeatureCollection', features: footprints } as GeoJSON.FeatureCollection<GeoJSON.Polygon, Props>,
     centres: { type: 'FeatureCollection', features: centres } as GeoJSON.FeatureCollection<GeoJSON.Point, Props>,
