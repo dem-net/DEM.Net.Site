@@ -14,8 +14,14 @@ const isTerrain = (m: Material) => m.name.startsWith('TerrainNode') || !!(m as M
  * model-viewer's public API can't do this (setSpecularFactor is a no-op on standard materials),
  * hence the internal scene.
  */
+type ModelScene = Object3D & { models: Object3D[]; queueRender(): void }
+
+/** model-viewer's internal three.js scene (not public API). `models` are the glTF roots, without the shadow. */
+export const viewerScene = (viewer: HTMLElement) =>
+  (viewer as unknown as Record<symbol, ModelScene | undefined>)[$scene]
+
 export function makeTerrainMatte(viewer: HTMLElement) {
-  const scene = (viewer as unknown as Record<symbol, (Object3D & { queueRender(): void }) | undefined>)[$scene]
+  const scene = viewerScene(viewer)
   if (!scene) return
   scene.traverse((o) => {
     if (!(o instanceof Mesh)) return

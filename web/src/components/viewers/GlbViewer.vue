@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { Expand, LoaderCircle, RotateCw, TriangleAlert } from '@lucide/vue'
+import { Expand, Grid3x3, LoaderCircle, RotateCw, TriangleAlert } from '@lucide/vue'
 
 const props = defineProps<{ src: string; sizeMB: number; alt?: string }>()
 
@@ -14,6 +14,7 @@ const progress = ref(0)
 const loaded = ref(false)
 const failed = ref(false)
 const autoRotate = ref(true)
+const wireframe = ref(false)
 const el = ref<HTMLElement>()
 
 // No post-processing (SSAO, sharpen…): it was tried and dropped as too risky for browser stability.
@@ -41,7 +42,19 @@ async function onLoad() {
   loaded.value = true
   const { makeTerrainMatte } = await import('./matteTerrain')
   if (el.value) makeTerrainMatte(el.value)
+  // A new src loads fresh meshes: re-apply the overlay if it was on.
+  if (wireframe.value) applyWireframe()
 }
+
+async function applyWireframe() {
+  const [{ viewerScene }, { setWireframe }] = await Promise.all([import('./matteTerrain'), import('./wireframe')])
+  const scene = el.value && viewerScene(el.value)
+  if (!scene) return
+  for (const model of scene.models) setWireframe(model, wireframe.value)
+  scene.queueRender()
+}
+
+watch(wireframe, applyWireframe)
 
 const pct = computed(() => Math.round(progress.value * 100))
 
@@ -108,6 +121,16 @@ function fullscreen() {
           @click="autoRotate = !autoRotate"
         >
           <RotateCw class="size-4" />
+        </button>
+        <button
+          type="button"
+          class="rounded-md bg-surface/80 p-1.5 text-ink-2 backdrop-blur hover:text-ink"
+          :class="wireframe ? 'text-accent' : ''"
+          :aria-pressed="wireframe"
+          title="Wireframe"
+          @click="wireframe = !wireframe"
+        >
+          <Grid3x3 class="size-4" />
         </button>
         <button
           type="button"
