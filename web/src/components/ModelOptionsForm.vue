@@ -2,7 +2,9 @@
 import { computed, ref } from 'vue'
 import { ChevronDown } from '@lucide/vue'
 import { MIN_MESH_DETAIL } from '@/api/client'
-import type { ModelOptions } from '@/api/types'
+import { MESH_QUALITIES } from '@/api/types'
+import type { MeshQuality, ModelOptions, QualityEstimate } from '@/api/types'
+import { useCatalog } from '@/composables/useCatalog'
 import DatasetSelect from './DatasetSelect.vue'
 import ImageryFields from './ImageryFields.vue'
 import RegionHint from './RegionHint.vue'
@@ -14,9 +16,20 @@ const props = withDefaults(
     allowStl?: boolean
     /** Country at the centre of the area (ISO code), for Swiss-data suggestions and coverage warnings. */
     country?: string | null
+    /** Size estimate per resolution (adaptive datasets), from the size estimate. */
+    qualities?: QualityEstimate[] | null
   }>(),
-  { allowStl: true, country: null },
+  { allowStl: true, country: null, qualities: null },
 )
+
+const { datasetByName } = useCatalog()
+/** Mapterhorn picks the tile zoom per area: the resolution is a choice. */
+const adaptive = computed(() => !!datasetByName(options.value.dataset)?.isMapterhorn)
+
+const QUALITY_LABELS: Record<MeshQuality, string> = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Best' }
+const qualityEstimate = (q: MeshQuality) => props.qualities?.find((e) => e.quality === q)
+const fmtMeters = (m: number) => (m >= 10 ? `${Math.round(m)} m` : m >= 1 ? `${m.toFixed(1)} m` : `${Math.round(m * 100)} cm`)
+const fmtMB = (mb: number) => (mb >= 10 ? `${Math.round(mb).toLocaleString()} MB` : `${mb.toFixed(1)} MB`)
 
 const advanced = ref(false)
 const isGltf = computed(() => options.value.format === 'glTF')
@@ -36,6 +49,26 @@ const formats = computed(() => [
       :country="props.country"
       :uses-imagery="isGltf && options.textured"
     />
+
+    <fieldset v-if="adaptive">
+      <legend class="field-label">Resolution</legend>
+      <div class="grid grid-cols-2 gap-2">
+        <label
+          v-for="q in MESH_QUALITIES"
+          :key="q"
+          class="cursor-pointer rounded-lg border px-3 py-2 text-sm"
+          :class="options.meshQuality === q ? 'border-accent bg-accent-soft' : 'border-line hover:bg-subtle'"
+        >
+          <input v-model="options.meshQuality" type="radio" :value="q" class="sr-only" />
+          <span class="block font-medium">{{ QUALITY_LABELS[q] }}</span>
+          <span v-if="qualityEstimate(q)" class="block text-xs tabular-nums" :class="qualityEstimate(q)!.allowed ? 'text-ink-3' : 'text-danger'">
+            {{ fmtMeters(qualityEstimate(q)!.resolutionMeters) }} · {{ qualityEstimate(q)!.allowed ? fmtMB(qualityEstimate(q)!.sizeMB) : 'too large' }}
+          </span>
+          <span v-else class="block text-xs text-ink-3">–</span>
+        </label>
+      </div>
+      <p class="mt-1 text-xs text-ink-3">Distance between elevation samples, for this area. Higher means more detail and a larger model.</p>
+    </fieldset>
 
     <fieldset v-if="formats.length > 1">
       <legend class="field-label">Format</legend>

@@ -21,6 +21,7 @@ describe('regenerateLink', () => {
       textureQuality: 1,
       zFactor: 1,
       meshDetail: 50,
+      meshQuality: 2,
       adornments: true,
     })
     expect(regenerateLink(gen('terrain'), {})).toEqual({
@@ -37,6 +38,7 @@ describe('regenerateLink', () => {
       textureQuality: 'High',
       zFactor: '2.3',
       meshReduceFactor: '0.8',
+      meshQuality: 'High',
       adornments: 'false',
     })!
     expect(optionsFromQuery(link.query)).toEqual({
@@ -46,6 +48,7 @@ describe('regenerateLink', () => {
       textureQuality: 3,
       zFactor: 2.5,
       meshDetail: 80,
+      meshQuality: 3,
       adornments: false,
     })
   })

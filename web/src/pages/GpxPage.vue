@@ -180,7 +180,7 @@ function showModel() {
       </StepBlock>
 
       <StepBlock :n="2" title="Options">
-        <ModelOptionsForm v-model="options" :country="country" />
+        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" :country="country" />
         <div class="mt-4">
           <ToggleSwitch v-model="track3D" label="Show the track in 3D" hint="Draws the path on the model" />
         </div>
