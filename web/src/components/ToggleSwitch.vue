@@ -4,7 +4,7 @@ defineProps<{ label: string; hint?: string; disabled?: boolean }>()
 </script>
 
 <template>
-  <label class="flex cursor-pointer items-start justify-between gap-4" :class="disabled ? 'cursor-not-allowed opacity-50' : ''">
+  <label class="relative flex cursor-pointer items-start justify-between gap-4" :class="disabled ? 'cursor-not-allowed opacity-50' : ''">
     <span class="text-sm">
       <span class="block font-medium">{{ label }}</span>
       <span v-if="hint" class="block text-xs text-ink-3">{{ hint }}</span>
