@@ -29,7 +29,8 @@ if (popup) {
   sendPopupResult({ state, token: token ?? undefined, error: queryError ?? (token ? undefined : 'missing access token') })
 }
 
-const modelId = popup ? null : completeSketchfabLogin(state)
+const login = popup ? null : completeSketchfabLogin(state)
+const modelId = login?.modelId ?? null
 const authError = popup
   ? null
   : (queryError ??
@@ -68,7 +69,7 @@ onMounted(() => {
     </div>
 
     <div v-else-if="token && modelId" class="card">
-      <SketchfabPublishForm :model-id="modelId" :authorize="authorize">
+      <SketchfabPublishForm :model-id="modelId" :authorize="authorize" :publish="login?.publish">
         <template #done>
           <div class="mt-4"><RouterLink to="/" class="text-sm text-ink-3 underline">Back to home</RouterLink></div>
         </template>

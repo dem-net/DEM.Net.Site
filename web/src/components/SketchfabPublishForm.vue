@@ -1,20 +1,28 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ExternalLink, LoaderCircle, Upload, X } from '@lucide/vue'
 import { api, safeUrl } from '@/api/client'
 import { ensureConnected, useProgress } from '@/api/hub'
+import type { PublishContext } from '@/api/types'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
+import { placeNameAt } from '@/composables/region'
+import { coordinatesLabel, publishDescription } from '@/composables/sketchfabPrefill'
 
 /**
  * Sketchfab upload form, used by the publish dialog (model view) and the OAuth callback page.
  * `authorize()` returns the user's access token. In the dialog it opens the sign-in popup,
  * so upload() calls it before any `await`: the popup must open within the submit gesture.
  */
-const props = defineProps<{ modelId: string; authorize: () => Promise<string> }>()
+const props = defineProps<{
+  modelId: string
+  authorize: () => Promise<string>
+  /** Prefill: the name from the place at the centre of the area, the description with a link back to the model. */
+  publish?: PublishContext | null
+}>()
 
 const form = reactive({
   modelName: '',
-  description: '',
+  description: props.publish ? publishDescription(props.publish) : '',
   tags: [] as string[],
   isInspectable: true,
   isPublished: false,
@@ -27,6 +35,25 @@ const status = ref<string | null>(null)
 const error = ref<string | null>(null)
 const viewerUrl = ref<string | null>(null)
 const { progress } = useProgress('export')
+
+// The place lookup fills the name unless the user typed one meanwhile
+const lookingUpPlace = ref(false)
+let placeLookup: AbortController | undefined
+onMounted(async () => {
+  const ctx = props.publish
+  if (!ctx) return
+  lookingUpPlace.value = true
+  placeLookup = new AbortController()
+  try {
+    const name = (await placeNameAt(ctx.lon, ctx.lat, placeLookup.signal)) ?? coordinatesLabel(ctx.lon, ctx.lat)
+    if (!form.modelName.trim()) form.modelName = name
+  } catch {
+    /* cancelled: the form was closed */
+  } finally {
+    lookingUpPlace.value = false
+  }
+})
+onBeforeUnmount(() => placeLookup?.abort())
 
 function addTag() {
   const t = tagDraft.value.trim().replace(/,$/, '')
@@ -86,7 +113,14 @@ defineExpose({ busy })
   <form v-else class="space-y-5 p-5" @submit.prevent="upload">
     <div>
       <label class="field-label" for="sf-name">Model name</label>
-      <input id="sf-name" v-model="form.modelName" class="input" maxlength="48" required placeholder="Mont Blanc massif" />
+      <input
+        id="sf-name"
+        v-model="form.modelName"
+        class="input"
+        maxlength="48"
+        required
+        :placeholder="lookingUpPlace ? 'Looking up the place…' : 'Mont Blanc massif'"
+      />
     </div>
     <div>
       <label class="field-label" for="sf-desc">Description</label>

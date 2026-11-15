@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { X } from '@lucide/vue'
+import type { PublishContext } from '@/api/types'
 import { beginSketchfabLogin, PopupBlockedError, popupSketchfabLogin } from '@/api/sketchfabAuth'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
 import SketchfabPublishForm from './SketchfabPublishForm.vue'
@@ -10,7 +11,11 @@ import SketchfabPublishForm from './SketchfabPublishForm.vue'
  * Sign-in happens in a popup; the token is kept in memory for further uploads.
  * Stays mounted while closed, so an upload in progress keeps its state.
  */
-const props = defineProps<{ modelId: string }>()
+const props = defineProps<{
+  modelId: string
+  /** Prefill of the name (place) and description (link), from the generation. */
+  publish?: PublishContext | null
+}>()
 
 const dialog = ref<HTMLDialogElement>()
 const blocked = ref(false)
@@ -46,7 +51,7 @@ async function authorize(): Promise<string> {
 
 /** Fallback: full-page redirect (leaves the model view). */
 function signInInThisTab() {
-  window.location.assign(beginSketchfabLogin(props.modelId))
+  window.location.assign(beginSketchfabLogin(props.modelId, props.publish ?? null))
 }
 
 defineExpose({ open })
@@ -69,7 +74,7 @@ defineExpose({ open })
         <X class="size-5" />
       </button>
     </div>
-    <SketchfabPublishForm :model-id="modelId" :authorize="authorize">
+    <SketchfabPublishForm :model-id="modelId" :authorize="authorize" :publish="publish">
       <template #error>
         <p v-if="blocked" class="mt-2">
           Allow pop-ups for this site and try again, or
