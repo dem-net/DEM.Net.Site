@@ -128,7 +128,7 @@ export function osmQuery(osm: OsmOptions) {
     withBuildings: osm.osmBuildings,
     withBuildingsColors: osm.useOsmBuildingsColor,
     buildingsColor: osm.buildingsColor,
-    withSkiPistes: osm.osmPistesSki,
+    withHighways: osm.osmHighways,
     withTerrain: !osm.osmOnly,
     centerOnOrigin: osm.osmOnly,
   }
@@ -265,6 +265,7 @@ interface EstimateResponse {
   estimatedModelFileSizeMB: number
   estimatedModelFileSizeAfterReduceMB: number
   maximumAllowedFileSizeMB: number
+  message?: string | null
 }
 
 export const api = {
@@ -320,6 +321,7 @@ export const api = {
       fullDetailMB: r.estimatedModelFileSizeMB,
       maxMB: r.maximumAllowedFileSizeMB,
       allowed: r.success && r.estimatedModelFileSizeAfterReduceMB <= r.maximumAllowedFileSizeMB,
+      ...(r.message && { message: r.message }),
     }
   },
 

@@ -58,7 +58,8 @@ describe('regenerateLink', () => {
   it('carries the OSM options', () => {
     const link = regenerateLink(gen('osm'), {
       withBuildings: 'false',
-      withSkiPistes: 'true',
+      withSkiPistes: 'true', // no longer offered: ignored
+      withHighways: 'false',
       withTerrain: 'false',
       buildingsColor: '#E0E0E0',
       withBuildingsColors: 'true',
@@ -68,7 +69,7 @@ describe('regenerateLink', () => {
       osmBuildings: false,
       useOsmBuildingsColor: true,
       buildingsColor: '#e0e0e0',
-      osmPistesSki: true,
+      osmHighways: false,
       osmOnly: true,
     })
   })

@@ -21,7 +21,7 @@ export const OSM_DEFAULTS: Readonly<OsmOptions> = Object.freeze({
   osmBuildings: true,
   useOsmBuildingsColor: false,
   buildingsColor: '#945200',
-  osmPistesSki: false,
+  osmHighways: true,
   osmOnly: false,
 })
 

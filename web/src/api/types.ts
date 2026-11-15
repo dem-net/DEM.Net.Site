@@ -88,13 +88,15 @@ export interface SizeEstimate {
   maxMB: number
   /** False when the server would refuse to generate this model. */
   allowed: boolean
+  /** Server explanation when refused for another reason than the size (e.g. too many OSM tiles). */
+  message?: string
 }
 
 export interface OsmOptions {
   osmBuildings: boolean
   useOsmBuildingsColor: boolean
   buildingsColor: string
-  osmPistesSki: boolean
+  osmHighways: boolean
   osmOnly: boolean
 }
 

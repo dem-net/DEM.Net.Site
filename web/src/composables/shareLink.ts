@@ -9,14 +9,15 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
  *   basemap=topo|streets               basemap
  *   relief=1                           3D relief on
  *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, adornments=0   model options that differ from the defaults
- *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, pistes=1, osmonly=1        OSM options that differ from the defaults (with osm=1)
+ *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, roads=0, osmonly=1         OSM options that differ from the defaults (with osm=1)
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
+ * `pistes` (ski pistes, no longer offered) is still cleaned from old links but ignored.
  */
 
 /** Query keys owned by share links (removed from the address bar once applied). */
 export const SHARE_KEYS = [
   'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'adornments',
-  'buildings', 'buildingcolors', 'buildingcolor', 'pistes', 'osmonly',
+  'buildings', 'buildingcolors', 'buildingcolor', 'roads', 'pistes', 'osmonly',
 ] as const
 
 type Query = Record<string, string>
@@ -109,7 +110,7 @@ export function osmToQuery(o: OsmOptions): Query {
   if (o.osmBuildings !== d.osmBuildings) q.buildings = o.osmBuildings ? '1' : '0'
   if (o.useOsmBuildingsColor !== d.useOsmBuildingsColor) q.buildingcolors = o.useOsmBuildingsColor ? '1' : '0'
   if (o.buildingsColor.toLowerCase() !== d.buildingsColor && HEX_COLOR.test(o.buildingsColor)) q.buildingcolor = o.buildingsColor.toLowerCase()
-  if (o.osmPistesSki !== d.osmPistesSki) q.pistes = o.osmPistesSki ? '1' : '0'
+  if (o.osmHighways !== d.osmHighways) q.roads = o.osmHighways ? '1' : '0'
   if (o.osmOnly !== d.osmOnly) q.osmonly = o.osmOnly ? '1' : '0'
   return q
 }
@@ -126,8 +127,8 @@ export function osmFromQuery(q: LocationQuery): Partial<OsmOptions> {
   if (colors !== undefined) o.useOsmBuildingsColor = colors
   const color = first(q, 'buildingcolor')
   if (color && HEX_COLOR.test(color)) o.buildingsColor = color.toLowerCase()
-  const pistes = flag('pistes')
-  if (pistes !== undefined) o.osmPistesSki = pistes
+  const roads = flag('roads')
+  if (roads !== undefined) o.osmHighways = roads
   const only = flag('osmonly')
   if (only !== undefined) o.osmOnly = only
   return o

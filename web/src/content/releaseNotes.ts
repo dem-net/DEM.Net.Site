@@ -11,6 +11,30 @@ export interface ReleaseNotes {
 
 export const releaseNotes: ReleaseNotes[] = [
   {
+    title: 'Week of November 15 – 21, 2026',
+    date: '2026-11-21',
+    layers: [
+      {
+        name: 'Website',
+        items: [
+          'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',
+          'The size estimate now includes the OpenStreetMap features.',
+        ],
+      },
+      {
+        name: 'Elevation API',
+        items: [
+          'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
+          'The OSM model size estimate counts buildings and roads (onlyEstimateSize=true), and "Features only" models (withTerrain=false) work again.',
+        ],
+      },
+      {
+        name: 'DEM.Net library',
+        items: ['OpenStreetMap extension: PMTiles (Protomaps) data source, with a fast size count.'],
+      },
+    ],
+  },
+  {
     title: 'Week of November 8 – 14, 2026',
     date: '2026-11-14',
     layers: [

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ModelOptions } from '@/api/types'
-import { mapStateFromQuery, mapStateToQuery, optionsFromQuery, optionsToQuery, parseViewParam, viewToParam } from './shareLink'
-import { MODEL_DEFAULTS } from './useModelOptions'
+import { mapStateFromQuery, mapStateToQuery, optionsFromQuery, optionsToQuery, osmFromQuery, osmToQuery, parseViewParam, SHARE_KEYS, viewToParam } from './shareLink'
+import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
 
 describe('map view param', () => {
   it('round-trips a tilted view and keeps flat views short', () => {
@@ -66,5 +66,19 @@ describe('model options query', () => {
       }),
     ).toEqual({})
     expect(optionsFromQuery({ z: '2.3', detail: '45.5' })).toEqual({ zFactor: 2.5 })
+  })
+})
+
+describe('OSM options', () => {
+  it('keeps defaults out of the link and round-trips roads off', () => {
+    expect(osmToQuery(OSM_DEFAULTS)).toEqual({})
+    const q = osmToQuery({ ...OSM_DEFAULTS, osmHighways: false, osmOnly: true })
+    expect(q).toEqual({ roads: '0', osmonly: '1' })
+    expect(osmFromQuery(q)).toEqual({ osmHighways: false, osmOnly: true })
+  })
+
+  it('cleans but ignores the retired pistes key', () => {
+    expect(SHARE_KEYS).toContain('pistes')
+    expect(osmFromQuery({ pistes: '1' })).toEqual({})
   })
 })
