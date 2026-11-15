@@ -8,7 +8,7 @@ export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
   textured: true,
   imageryProvider: DEFAULT_IMAGERY,
   textureQuality: 2,
-  zFactor: 1,
+  zFactor: 1.5,
   meshDetail: 50,
   meshQuality: 2,
   adornments: true,

@@ -75,7 +75,8 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - The page defaults to the Streets basemap. MapLibre popups live outside the component, so their theme styles are in an unscoped, `.stats-popup`-namespaced `<style>`.
     - What's published is disclosed on `/privacy#statistics`. Update it if the published fields change.
   - `TexturesPage` (`/textures`) has one Generate button per image plus "Generate all (.zip)". Only one job runs at a time (the server throttle). Results are dropped when the area or options change. The Map to 3D result links to it with the same `?bbox=`.
-  - Shared pieces: `AreaStep.vue` (step 1 of the bbox tools), `ImageryFields.vue` (imagery + quality), `RegionHint.vue` (`v-model:dataset`, `v-model:imagery-provider`).
+  - Shared pieces: `AreaStep.vue` (step 1 of the bbox tools), `ImageryFields.vue` (imagery + quality).
+  - Defaults (`MODEL_DEFAULTS`, `DEFAULT_DATASET`): Mapterhorn dataset, vertical exaggeration 1.5.
   - The "New" badge (`NewBadge.vue`) is driven by `isNew` on the tool entries in `App.vue` and `HomePage.vue`. Remove it there once the tool is no longer new.
   - The selected area is stored in `?bbox=`.
   - **Share links** (Map to 3D, `ShareButton.vue`) add the map view, basemap, 3D relief and the non-default model options to the URL (`src/composables/shareLink.ts`).
@@ -84,7 +85,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - New model options must be added to `optionsToQuery`/`optionsFromQuery`, or shared links will silently drop them.
   - Old URLs (`/playground_*`) redirect in `src/router.ts`.
   - `/sketchfab_oauth2` is the OAuth redirect URI registered with Sketchfab, so the path must not change. It reads `access_token` and `state` from the URL hash and then removes them. `state` is a CSRF nonce, not the model id: `beginSketchfabLogin()` (`src/api/sketchfabAuth.ts`) stores `{nonce, modelId, publish}` in `sessionStorage`, and the callback refuses a token whose `state` doesn't match.
-  - The publish form is prefilled from a `PublishContext` captured when the model is generated (the options may change afterwards): Map to 3D links to its share URL, GPX to 3D to the GPX page (tracks aren't stored). The name is "Place, Country" from Photon reverse geocoding at the area's centre (`placeNameAt`, `src/composables/region.ts`, sharing the cached lookup of the country check), coordinates as a fallback, and never overwrites a name the user typed.
+  - The publish form is prefilled from a `PublishContext` captured when the model is generated (the options may change afterwards): Map to 3D links to its share URL, GPX to 3D to the GPX page (tracks aren't stored). The name is "Place, Country" from Photon reverse geocoding at the area's centre (`placeNameAt`, `src/composables/region.ts`), coordinates as a fallback, and never overwrites a name the user typed.
 - **3D preview**:
   - `viewers/GlbViewer.vue` uses `<model-viewer>`, loaded lazily and registered as a custom element in `vite.config.ts`. It shows load progress and asks before loading large files.
   - `viewers/StlViewer.vue` is a minimal three.js viewer, because `<model-viewer>` can't read STL. `three` must stay on the version `@google/model-viewer` expects as a peer dependency.
@@ -94,10 +95,6 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Release notes for the About page (`#release-notes`) live in `src/content/releaseNotes.ts`, newest first: one entry per period, short user-facing bullets per layer (Website, Elevation API, DEM.Net library, Audience measurement).
   - Every external social and sponsor link (GitHub, Discord, Bluesky, LinkedIn, Sketchfab, GitHub Sponsors, Patreon, PayPal) lives in `src/content/links.ts`. The header, footer, About and `SupportBlock` all read it.
   - Brand logos come from `BrandIcon.vue`, which uses `simple-icons` (CC0). LinkedIn is hand-drawn because simple-icons removed it. The site deliberately has no Twitter or Slack links.
-- **Regional data** (`src/composables/region.ts`, `RegionHint.vue`):
-  - A dataset's coverage comes from its `extentInfo`; an imagery provider's comes from names like "SwissImage (Switzerland only)".
-  - The area's country is found by Photon reverse geocoding of the area's centre.
-  - Inside CH/LI, the hint offers swissALTI3D 2m + SwissImage. When a regional option is used outside its country, it warns.
 - **OBJ export**: `GET /api/model/export/obj?modelId=<requestId>` returns a ZIP (`.obj`, `.mtl`, texture) for glTF models only (`ModelResult.objUrl`).
 - **Security**:
   - The production build gets a Content-Security-Policy `<meta>` tag (`contentSecurityPolicy()` in `vite.config.ts`; build only, because dev HMR uses inline scripts). Add any new third-party host there, or the browser silently blocks it.
