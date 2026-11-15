@@ -1,5 +1,5 @@
 import type { LocationQuery } from 'vue-router'
-import type { ModelOptions, OsmOptions } from '@/api/types'
+import type { MeshQuality, ModelOptions, OsmOptions } from '@/api/types'
 import type { Basemap, MapState, MapView } from '@/components/map/mapContext'
 import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
 
@@ -8,7 +8,8 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
  *   map=lon,lat,zoom[,bearing,pitch]   camera
  *   basemap=topo|streets               basemap
  *   relief=1                           3D relief on
- *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, adornments=0   model options that differ from the defaults
+ *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, resolution=low|high|best, adornments=0
+ *                                      model options that differ from the defaults (resolution: Mapterhorn)
  *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, roads=0, osmonly=1         OSM options that differ from the defaults (with osm=1)
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
  * `pistes` (ski pistes, no longer offered) is still cleaned from old links but ignored.
@@ -16,7 +17,7 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
 
 /** Query keys owned by share links (removed from the address bar once applied). */
 export const SHARE_KEYS = [
-  'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'adornments',
+  'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'resolution', 'adornments',
   'buildings', 'buildingcolors', 'buildingcolor', 'roads', 'pistes', 'osmonly',
 ] as const
 
@@ -63,6 +64,10 @@ export function mapStateFromQuery(q: LocationQuery): Partial<MapState> {
   }
 }
 
+/** Mesh quality (Mapterhorn resolution) in links: by name, `quality` is the texture quality. */
+const RESOLUTION_NAMES: Record<MeshQuality, string> = { 1: 'low', 2: 'medium', 3: 'high', 4: 'best' }
+const RESOLUTION_BY_NAME: Record<string, MeshQuality> = { low: 1, medium: 2, high: 3, best: 4 }
+
 export function optionsToQuery(o: ModelOptions): Query {
   const d = MODEL_DEFAULTS
   const q: Query = {}
@@ -73,6 +78,7 @@ export function optionsToQuery(o: ModelOptions): Query {
   if (o.textureQuality !== d.textureQuality) q.quality = String(o.textureQuality)
   if (o.zFactor !== d.zFactor) q.z = String(o.zFactor)
   if (o.meshDetail !== d.meshDetail) q.detail = String(o.meshDetail)
+  if (o.meshQuality !== d.meshQuality) q.resolution = RESOLUTION_NAMES[o.meshQuality]
   if (o.adornments !== d.adornments) q.adornments = o.adornments ? '1' : '0'
   return q
 }
@@ -97,6 +103,8 @@ export function optionsFromQuery(q: LocationQuery): Partial<ModelOptions> {
   if (first(q, 'z') && Number.isFinite(z) && z >= 1 && z <= 10) o.zFactor = Math.round(z * 2) / 2 // the slider's 0.5 steps
   const detail = Number(first(q, 'detail'))
   if (first(q, 'detail') && Number.isInteger(detail) && detail >= 10 && detail <= 100) o.meshDetail = detail
+  const meshQuality = RESOLUTION_BY_NAME[first(q, 'resolution')?.toLowerCase() ?? '']
+  if (meshQuality) o.meshQuality = meshQuality
   const adornments = first(q, 'adornments')
   if (adornments === '0' || adornments === '1') o.adornments = adornments === '1'
   return o

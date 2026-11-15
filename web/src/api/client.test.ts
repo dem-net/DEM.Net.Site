@@ -10,6 +10,7 @@ import {
   texturePath,
   toModelResult,
   toTextureEstimates,
+  toQualityEstimates,
   toTextureResult,
 } from './client'
 import type { ModelOptions, TextureOptions } from './types'
@@ -23,6 +24,7 @@ const opts: ModelOptions = {
   textureQuality: 3,
   zFactor: 1.5,
   meshDetail: 50,
+  meshQuality: 2,
   adornments: true,
 }
 
@@ -62,6 +64,7 @@ describe('terrainModelPath', () => {
       format: 'glTF',
       zFactor: '1.5',
       meshReduceFactor: '0.5',
+      meshQuality: '2',
       adornments: 'true',
       clientConnectionId: 'abc',
     })
@@ -102,6 +105,30 @@ describe('terrainModelPath', () => {
     const url = new URL(terrainModelPath(bbox, { ...opts, format: 'STL' }, null, null), 'https://x')
     expect(url.searchParams.get('textured')).toBe('false')
     expect(url.searchParams.has('generateTIN')).toBe(false)
+  })
+})
+
+describe('mesh quality estimates', () => {
+  const base = { success: true, estimatedModelFileSizeMB: 2, estimatedModelFileSizeAfterReduceMB: 1, maximumAllowedFileSizeMB: 200 }
+
+  it('maps each resolution of adaptive datasets, at the requested mesh detail', () => {
+    const q = toQualityEstimates({
+      ...base,
+      meshQualityEstimates: [
+        { quality: 1, resolutionMeters: 13.3, estimatedModelFileSizeAfterReduceMB: 1.8, allowed: true },
+        { quality: 4, resolutionMeters: 0.42, estimatedModelFileSizeAfterReduceMB: 1799, allowed: false },
+        { quality: 0, resolutionMeters: 30, estimatedModelFileSizeAfterReduceMB: 1, allowed: true },
+      ],
+    })
+    expect(q).toEqual([
+      { quality: 1, resolutionMeters: 13.3, sizeMB: 1.8, allowed: true },
+      { quality: 4, resolutionMeters: 0.42, sizeMB: 1799, allowed: false },
+    ])
+  })
+
+  it('has none for fixed resolution datasets', () => {
+    expect(toQualityEstimates(base)).toBeUndefined()
+    expect(toQualityEstimates({ ...base, meshQualityEstimates: null })).toBeUndefined()
   })
 })
 

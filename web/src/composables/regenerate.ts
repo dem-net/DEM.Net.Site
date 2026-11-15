@@ -1,5 +1,5 @@
 import { bboxToPath } from '@/api/client'
-import type { Generation, ModelOptions, OsmOptions } from '@/api/types'
+import type { Generation, MeshQuality, ModelOptions, OsmOptions } from '@/api/types'
 import { optionsToQuery, osmToQuery } from './shareLink'
 import { DEFAULT_DATASET, DEFAULT_IMAGERY } from './useCatalog'
 import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
@@ -32,6 +32,12 @@ function quality(v: string | undefined, apiDefault: 1 | 2 | 3): 1 | 2 | 3 {
   return (v && names[v.toLowerCase()]) || apiDefault
 }
 
+/** MeshQuality is sent as 1–4 or by name (Low, Medium, High, Best). */
+function meshQuality(v: string | undefined, apiDefault: MeshQuality): MeshQuality {
+  const names: Record<string, MeshQuality> = { '1': 1, '2': 2, '3': 3, '4': 4, low: 1, medium: 2, high: 3, best: 4 }
+  return (v && names[v.toLowerCase()]) || apiDefault
+}
+
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
 
@@ -45,6 +51,7 @@ export function modelOptionsFromApi(g: Generation, o: ApiOptions): ModelOptions 
     textureQuality: quality(o.textureQuality, 1),
     zFactor: clamp(Math.round(num(o.zFactor, 1) * 2) / 2, 1, 10),
     meshDetail: clamp(Math.round(num(o.meshReduceFactor, 0.5) * 100), 10, 100),
+    meshQuality: meshQuality(o.meshQuality, 2),
     adornments: bool(o.adornments, true),
   }
 }

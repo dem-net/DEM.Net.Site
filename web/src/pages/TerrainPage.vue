@@ -124,7 +124,7 @@ function showModel() {
       <AreaStep :area="area" />
 
       <StepBlock :n="2" title="Options">
-        <ModelOptionsForm v-model="options" :allow-stl="!withOsm" :country="country" />
+        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" :allow-stl="!withOsm" :country="country" />
 
         <div class="mt-4 rounded-lg border border-line p-3">
           <ToggleSwitch

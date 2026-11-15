@@ -19,6 +19,7 @@ export const releaseNotes: ReleaseNotes[] = [
         items: [
           'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',
           'The size estimate now includes the OpenStreetMap features.',
+          'Mapterhorn: choose the resolution (Low, Medium, High, Best), with the sample spacing and estimated size of each. Buildings are white by default.',
         ],
       },
       {
@@ -26,11 +27,15 @@ export const releaseNotes: ReleaseNotes[] = [
         items: [
           'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
           'The OSM model size estimate counts buildings and roads (onlyEstimateSize=true), and "Features only" models (withTerrain=false) work again.',
+          'Much faster OpenStreetMap models with Mapterhorn (a dense city went from minutes to seconds), and roads sit 50 cm above the terrain so they no longer flicker through it.',
         ],
       },
       {
         name: 'DEM.Net library',
-        items: ['OpenStreetMap extension: PMTiles (Protomaps) data source, with a fast size count.'],
+        items: [
+          'OpenStreetMap extension: PMTiles (Protomaps) data source, with a fast size count.',
+          'Faster point and line elevations: decoded Mapterhorn tiles are shared between lookups.',
+        ],
       },
     ],
   },

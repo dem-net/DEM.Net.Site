@@ -9,9 +9,11 @@ import type {
   GenerationDetail,
   GenerationStats,
   ImageryProvider,
+  MeshQuality,
   ModelOptions,
   ModelResult,
   OsmOptions,
+  QualityEstimate,
   SizeEstimate,
   SketchfabExportRequest,
   TextureEstimate,
@@ -111,6 +113,7 @@ function modelQuery(o: ModelOptions, connectionId: string | null) {
     format: o.format,
     zFactor: o.zFactor,
     meshReduceFactor: meshReduceFactor(o.meshDetail),
+    meshQuality: o.meshQuality, // ignored by fixed resolution datasets
     adornments: o.format === 'glTF' && o.adornments,
     clientConnectionId: connectionId,
   }
@@ -260,12 +263,30 @@ export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
   return { updatedAt: r.updatedAt, generations }
 }
 
-interface EstimateResponse {
+export interface EstimateResponse {
   success: boolean
   estimatedModelFileSizeMB: number
   estimatedModelFileSizeAfterReduceMB: number
   maximumAllowedFileSizeMB: number
   message?: string | null
+  meshQualityEstimates?: {
+    quality: number
+    resolutionMeters: number
+    estimatedModelFileSizeAfterReduceMB: number
+    allowed: boolean
+  }[] | null
+}
+
+export function toQualityEstimates(r: EstimateResponse): QualityEstimate[] | undefined {
+  const list = (r.meshQualityEstimates ?? [])
+    .filter((e) => [1, 2, 3, 4].includes(e.quality))
+    .map((e) => ({
+      quality: e.quality as MeshQuality,
+      resolutionMeters: e.resolutionMeters,
+      sizeMB: e.estimatedModelFileSizeAfterReduceMB,
+      allowed: e.allowed,
+    }))
+  return list.length ? list : undefined
 }
 
 export const api = {
@@ -316,12 +337,14 @@ export const api = {
     signal?: AbortSignal,
   ): Promise<SizeEstimate> {
     const r = await request<EstimateResponse>(terrainModelPath(bbox, o, osm, null, true), { signal })
+    const qualities = toQualityEstimates(r)
     return {
       sizeMB: r.estimatedModelFileSizeAfterReduceMB,
       fullDetailMB: r.estimatedModelFileSizeMB,
       maxMB: r.maximumAllowedFileSizeMB,
       allowed: r.success && r.estimatedModelFileSizeAfterReduceMB <= r.maximumAllowedFileSizeMB,
       ...(r.message && { message: r.message }),
+      ...(qualities && { qualities }),
     }
   },
 

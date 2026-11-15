@@ -45,10 +45,11 @@ describe('model options query', () => {
       textureQuality: 3,
       zFactor: 2.5,
       meshDetail: 30,
+      meshQuality: 4,
       adornments: false,
     }
     const q = optionsToQuery(o)
-    expect(q).toEqual({ dataset: 'swissALTI3D', format: 'stl', texture: '0', imagery: 'SwissImage', quality: '3', z: '2.5', detail: '30', adornments: '0' })
+    expect(q).toEqual({ dataset: 'swissALTI3D', format: 'stl', texture: '0', imagery: 'SwissImage', quality: '3', z: '2.5', detail: '30', resolution: 'best', adornments: '0' })
     expect(optionsFromQuery(q)).toEqual(o)
   })
 
@@ -62,6 +63,7 @@ describe('model options query', () => {
         quality: '7',
         z: '50',
         detail: '5',
+        resolution: 'ultra',
         adornments: 'no',
       }),
     ).toEqual({})

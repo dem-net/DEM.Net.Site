@@ -36,6 +36,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - The GPX endpoint ignores `onlyEstimateSize`. The GPX page estimates with the bbox endpoint over the track bounds plus 1 km, and only warns.
     - `useSizeEstimate()` handles the debouncing and the "Reduce to fit" detail level (`detailToFit`, linear in `meshReduceFactor`).
   - `meshReduceFactor` (0.1–1) is the UI's "Mesh detail" (10–100 %, default 50 %).
+  - `meshQuality` (1–4) is the Mapterhorn "Resolution" (Low, Medium, High, Best; default Medium), shown when the dataset has `isMapterhorn`. Always sent, other datasets ignore it. The estimate's `meshQualityEstimates` give each option's spacing and size. Share-link key `resolution=low|high|best` (`quality` is the texture quality).
   - **Textures** (`texturePath()`, `api.textures()`): `GET /api/texture/bbox/{w,e,s,n}?outputs=texture,normalmap,heightmap` generates only the requested images.
     - Every image comes with a world file (`.jgw`/`.pgw`) and a `.prj`, plus one ZIP with `metadata.json` (min/max elevation for decoding the 16-bit height map). `toTextureResult()` rejects an image without its georeferencing.
     - The texture is in EPSG:3857. The normal map and height map are in the dataset's SRID (one pixel per DEM sample).

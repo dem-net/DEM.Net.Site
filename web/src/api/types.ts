@@ -13,6 +13,8 @@ export interface Dataset {
   attribution: Attribution
   isListed: boolean
   extentInfo?: string
+  /** Adaptive resolution (zoom chosen per area): models take a mesh quality. */
+  isMapterhorn?: boolean
 }
 
 export interface ImageryProvider {
@@ -66,6 +68,10 @@ export interface BBox {
 
 export type ModelFormat = 'glTF' | 'STL'
 
+/** Resolution of adaptive datasets (Mapterhorn), the API's meshQuality: 1 Low, 2 Medium, 3 High, 4 Best (highest available). */
+export type MeshQuality = 1 | 2 | 3 | 4
+export const MESH_QUALITIES: readonly MeshQuality[] = [1, 2, 3, 4]
+
 export interface ModelOptions {
   dataset: string
   format: ModelFormat
@@ -75,6 +81,8 @@ export interface ModelOptions {
   zFactor: number
   /** Percentage of mesh triangles to keep, 10–100 (sent as meshReduceFactor = meshDetail / 100). */
   meshDetail: number
+  /** Resolution of adaptive datasets (Mapterhorn); the other datasets ignore it. */
+  meshQuality: MeshQuality
   /** 3D scale bar and north arrow next to the terrain (glTF only; the API's default is true). */
   adornments: boolean
 }
@@ -90,6 +98,16 @@ export interface SizeEstimate {
   allowed: boolean
   /** Server explanation when refused for another reason than the size (e.g. too many OSM tiles). */
   message?: string
+  /** Adaptive datasets (Mapterhorn): the estimate at each resolution, for the requested mesh detail. */
+  qualities?: QualityEstimate[]
+}
+
+export interface QualityEstimate {
+  quality: MeshQuality
+  /** Ground distance between elevation samples at the centre of the area. */
+  resolutionMeters: number
+  sizeMB: number
+  allowed: boolean
 }
 
 export interface OsmOptions {
