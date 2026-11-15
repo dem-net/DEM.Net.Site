@@ -28,7 +28,6 @@ import {
 import { useGenerate } from '@/composables/useGenerate'
 import { useModelOptions, useOsmOptions } from '@/composables/useModelOptions'
 import { useSizeEstimate } from '@/composables/useSizeEstimate'
-import { useCountry } from '@/composables/region'
 
 const route = useRoute()
 const router = useRouter()
@@ -84,11 +83,6 @@ const size = useSizeEstimate(() =>
   area.bbox.value ? { bbox: area.bbox.value, options, osm: withOsm.value ? osm : null } : null,
 )
 
-const country = useCountry(() => {
-  const b = area.bbox.value
-  return b ? { lon: (b.west + b.east) / 2, lat: (b.south + b.north) / 2 } : null
-})
-
 const disabledReason = computed(() => {
   if (!area.bbox.value) return 'Draw an area on the map first.'
   if (withOsm.value && !osm.osmBuildings && !osm.osmHighways) return 'Choose buildings or roads.'
@@ -134,7 +128,7 @@ function showModel() {
       <AreaStep :area="area" />
 
       <StepBlock :n="2" title="Options">
-        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" :allow-stl="!withOsm" :country="country" />
+        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" :allow-stl="!withOsm" />
 
         <div class="mt-4 rounded-lg border border-line p-3">
           <ToggleSwitch

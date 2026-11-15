@@ -20,6 +20,8 @@ export const releaseNotes: ReleaseNotes[] = [
           'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',
           'The size estimate now includes the OpenStreetMap features.',
           'Mapterhorn: choose the resolution (Low, Medium, High, Best), with the sample spacing and estimated size of each. Buildings are white by default.',
+          'Mapterhorn is now the default elevation data, with a 1.5× vertical exaggeration.',
+          'Fixed the page scrolling past the panel when Mapterhorn is selected.',
           'Stats: each new generation is named after its place (older ones show "Unknown location").',
           'Publishing on Sketchfab fills in the model name from its location, and the description links back to the model.',
         ],

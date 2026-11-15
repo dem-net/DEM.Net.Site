@@ -64,7 +64,7 @@ Yes. For areas in Switzerland and Liechtenstein, the API offers [swisstopo](http
 - **swissALTI3D** elevation at 2 m or 50 cm resolution
 - **SwissImage** aerial imagery
 
-When your area is in Switzerland, the generator suggests switching to them. They cover only Switzerland and Liechtenstein, so use a global dataset elsewhere.
+Choose them in the elevation data and imagery lists. They cover only Switzerland and Liechtenstein, so use a global dataset elsewhere.
 
 Credit them as "© swisstopo" (see swisstopo's [terms of use for open geodata](https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html)).
 

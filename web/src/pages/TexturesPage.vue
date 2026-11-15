@@ -11,13 +11,11 @@ import AreaStep from '@/components/AreaStep.vue'
 import DatasetSelect from '@/components/DatasetSelect.vue'
 import GenerateBlock from '@/components/GenerateBlock.vue'
 import ImageryFields from '@/components/ImageryFields.vue'
-import RegionHint from '@/components/RegionHint.vue'
 import StepBlock from '@/components/StepBlock.vue'
 import ToolLayout from '@/components/ToolLayout.vue'
 import { useAreaPicker } from '@/composables/useAreaPicker'
 import { DEFAULT_DATASET, DEFAULT_IMAGERY, useCatalog } from '@/composables/useCatalog'
 import { optionsFromQuery } from '@/composables/shareLink'
-import { useCountry } from '@/composables/region'
 import { useGenerate } from '@/composables/useGenerate'
 import { textureKey, useTextureEstimate } from '@/composables/useTextureEstimate'
 
@@ -51,11 +49,6 @@ onMounted(() => {
   const query = { ...route.query }
   for (const k of LINK_KEYS) delete query[k]
   router.replace({ query })
-})
-
-const country = useCountry(() => {
-  const b = area.bbox.value
-  return b ? { lon: (b.west + b.east) / 2, lat: (b.south + b.north) / 2 } : null
 })
 
 const estimateInput = () => (area.bbox.value ? { bbox: area.bbox.value, options } : null)
@@ -134,7 +127,6 @@ const sridLabel = (srid: number) => (srid === 3857 ? 'Web Mercator (EPSG:3857)' 
             <DatasetSelect v-model="options.dataset" />
             <p class="mt-1 text-xs text-ink-3">Used for the normal map and the height map.</p>
           </div>
-          <RegionHint v-model:dataset="options.dataset" v-model:imagery-provider="options.imageryProvider" :country="country" uses-imagery />
           <ImageryFields v-model:provider="options.imageryProvider" v-model:quality="options.textureQuality" />
         </div>
       </StepBlock>

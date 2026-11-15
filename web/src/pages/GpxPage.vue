@@ -18,7 +18,6 @@ import { parseGpx, type GpxSummary } from '@/composables/gpx'
 import { useGenerate } from '@/composables/useGenerate'
 import { useModelOptions } from '@/composables/useModelOptions'
 import { useSizeEstimate } from '@/composables/useSizeEstimate'
-import { useCountry } from '@/composables/region'
 
 const SAMPLES = [
   { file: 'lauzannier.gpx', label: 'Lauzanier lake hike' },
@@ -43,10 +42,6 @@ let map: MlMap | null = null
  * bounds plus the ~1 km margin the server adds around tracks. Approximate: warns, never blocks.
  */
 const GPX_MARGIN_KM = 1
-const country = useCountry(() => {
-  const b = summary.value?.bbox
-  return b ? { lon: (b.west + b.east) / 2, lat: (b.south + b.north) / 2 } : null
-})
 const size = useSizeEstimate(() =>
   summary.value ? { bbox: padBBox(summary.value.bbox, GPX_MARGIN_KM), options, osm: null } : null,
 )
@@ -195,7 +190,7 @@ function showModel() {
       </StepBlock>
 
       <StepBlock :n="2" title="Options">
-        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" :country="country" />
+        <ModelOptionsForm v-model="options" :qualities="size.estimate.value?.qualities" />
         <div class="mt-4">
           <ToggleSwitch v-model="track3D" label="Show the track in 3D" hint="Draws the path on the model" />
         </div>

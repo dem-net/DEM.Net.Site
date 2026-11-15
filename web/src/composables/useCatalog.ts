@@ -22,7 +22,7 @@ function load() {
   return loading
 }
 
-export const DEFAULT_DATASET = 'SRTM_GL3'
+export const DEFAULT_DATASET = 'Mapterhorn'
 export const DEFAULT_IMAGERY = 'MapBox-SatelliteStreet'
 
 export function useCatalog() {

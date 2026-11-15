@@ -7,19 +7,16 @@ import type { MeshQuality, ModelOptions, QualityEstimate } from '@/api/types'
 import { useCatalog } from '@/composables/useCatalog'
 import DatasetSelect from './DatasetSelect.vue'
 import ImageryFields from './ImageryFields.vue'
-import RegionHint from './RegionHint.vue'
 import ToggleSwitch from './ToggleSwitch.vue'
 
 const options = defineModel<ModelOptions>({ required: true })
 const props = withDefaults(
   defineProps<{
     allowStl?: boolean
-    /** Country at the centre of the area (ISO code), for Swiss-data suggestions and coverage warnings. */
-    country?: string | null
     /** Size estimate per resolution (adaptive datasets), from the size estimate. */
     qualities?: QualityEstimate[] | null
   }>(),
-  { allowStl: true, country: null, qualities: null },
+  { allowStl: true, qualities: null },
 )
 
 const { datasetByName } = useCatalog()
@@ -43,12 +40,6 @@ const formats = computed(() => [
 <template>
   <div class="space-y-4">
     <DatasetSelect v-model="options.dataset" />
-    <RegionHint
-      v-model:dataset="options.dataset"
-      v-model:imagery-provider="options.imageryProvider"
-      :country="props.country"
-      :uses-imagery="isGltf && options.textured"
-    />
 
     <fieldset v-if="adaptive">
       <legend class="field-label">Resolution</legend>

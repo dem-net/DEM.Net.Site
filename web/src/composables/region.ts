@@ -1,33 +1,3 @@
-import { onBeforeUnmount, ref, watch } from 'vue'
-import type { Dataset } from '@/api/types'
-
-/** Countries (ISO 3166-1 alpha-2) covered by each regional dataset / imagery, keyed by the API's region name. */
-const REGIONS: Record<string, string[]> = {
-  Switzerland: ['CH', 'LI'], // swissALTI3D and SwissImage also cover Liechtenstein
-  France: ['FR'],
-  Italy: ['IT'],
-  Spain: ['ES'],
-}
-
-export const SWISS_COUNTRIES = REGIONS.Switzerland
-
-export interface Region {
-  name: string
-  countries: string[]
-}
-
-/** Region of a dataset, from its `extentInfo` ("Global", "Switzerland", …); null when global. */
-export function datasetRegion(d: Pick<Dataset, 'extentInfo'> | undefined): Region | null {
-  const name = d?.extentInfo
-  return name && REGIONS[name] ? { name, countries: REGIONS[name] } : null
-}
-
-/** Region of an imagery provider, from names like "SwissImage (Switzerland only)"; null when global. */
-export function imageryRegion(providerName: string): Region | null {
-  const name = providerName.match(/\((\w+) only\)/)?.[1]
-  return name && REGIONS[name] ? { name, countries: REGIONS[name] } : null
-}
-
 /** Properties of Photon's reverse geocoding result we use. */
 export interface ReversePlace {
   name?: string
@@ -68,12 +38,6 @@ function reverseAt(lon: number, lat: number, signal?: AbortSignal): Promise<Reve
   return request
 }
 
-/** Country code at a point; null at sea or on failure. */
-export async function countryAt(lon: number, lat: number, signal?: AbortSignal): Promise<string | null> {
-  const place = await reverseAt(lon, lat, signal)
-  return place?.countrycode?.toUpperCase() ?? null
-}
-
 /** Longest model name Sketchfab accepts in our form. */
 export const PLACE_NAME_MAX = 48
 
@@ -99,49 +63,9 @@ export async function placeNameAt(lon: number, lat: number, signal?: AbortSignal
       return placeLabel(await reverseAt(lon, lat, signal))
     } catch (e) {
       if (signal?.aborted) throw e
-      // Not ours: the shared lookup was cancelled by another caller (the country check). Ask again.
+      // Not ours: the shared, cached lookup was cancelled by another caller. Ask again.
       if ((e as Error).name !== 'AbortError') return null
     }
   }
   return null
-}
-
-/** Country of the given point (e.g. the centre of the selected area), debounced. */
-export function useCountry(point: () => { lon: number; lat: number } | null) {
-  const country = ref<string | null>(null)
-  let timer: ReturnType<typeof setTimeout> | undefined
-  let controller: AbortController | undefined
-
-  watch(
-    () => {
-      const p = point()
-      return p ? `${p.lon.toFixed(3)},${p.lat.toFixed(3)}` : null
-    },
-    (key) => {
-      clearTimeout(timer)
-      controller?.abort()
-      if (!key) {
-        country.value = null
-        return
-      }
-      timer = setTimeout(async () => {
-        const p = point()
-        if (!p) return
-        controller = new AbortController()
-        try {
-          country.value = await countryAt(p.lon, p.lat, controller.signal)
-        } catch {
-          /* keep the previous value on network errors / aborts */
-        }
-      }, 500)
-    },
-    { immediate: true },
-  )
-
-  onBeforeUnmount(() => {
-    clearTimeout(timer)
-    controller?.abort()
-  })
-
-  return country
 }

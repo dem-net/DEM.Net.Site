@@ -27,7 +27,7 @@ describe('regenerateLink', () => {
     })
     expect(regenerateLink(gen('terrain'), {})).toEqual({
       path: '/terrain',
-      query: { bbox: '6.82,6.91,45.8,45.86', texture: '0', quality: '1' },
+      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'SRTM_GL3', texture: '0', quality: '1', z: '1' },
       areaOnly: false,
     })
   })
@@ -85,7 +85,7 @@ describe('regenerateLink', () => {
       areaOnly: false,
     })
     // The textures endpoint defaults to Medium
-    expect(regenerateLink(gen('textures', 'heightmap'), {})!.query).toEqual({ bbox: '6.82,6.91,45.8,45.86' })
+    expect(regenerateLink(gen('textures', 'heightmap', 'Mapterhorn'), {})!.query).toEqual({ bbox: '6.82,6.91,45.8,45.86' })
   })
 
   it('reuses only the area of GPX models, and needs an area', () => {
