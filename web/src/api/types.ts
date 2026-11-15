@@ -175,6 +175,16 @@ export interface TextureEstimate {
   allowed: boolean
 }
 
+/** What the Sketchfab publish form is prefilled from, captured when the model is generated. */
+export interface PublishContext {
+  /** Centre of the area, for the model name (place lookup). */
+  lon: number
+  lat: number
+  /** Where to generate the model again (or the page that made it), for the description. */
+  link: string
+  linkLabel: string
+}
+
 export interface SketchfabExportRequest {
   userToken: string
   modelId: string

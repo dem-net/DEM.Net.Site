@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api, bboxToPath } from '@/api/client'
+import type { PublishContext } from '@/api/types'
 import AddressSearch from '@/components/map/AddressSearch.vue'
 import AreaStep from '@/components/AreaStep.vue'
 import BaseMap from '@/components/map/BaseMap.vue'
@@ -97,10 +98,19 @@ const disabledReason = computed(() => {
 
 const layout = ref<InstanceType<typeof ToolLayout>>()
 
+/** Sketchfab prefill, captured at generation: the options may change while the model is shown. */
+const publishContext = ref<PublishContext | null>(null)
+
 async function generate() {
   const b = area.bbox.value
   if (!b) return
   showResult.value = false
+  publishContext.value = {
+    lon: (b.west + b.east) / 2,
+    lat: (b.south + b.north) / 2,
+    link: shareUrl(),
+    linkLabel: 'Generate this model on Elevation API',
+  }
   const done = gen.run((id, signal) => api.terrainModel(b, options, withOsm.value ? osm : null, id, signal))
   // On mobile the footer scrolls with the options: show the progress, then the model.
   await nextTick()
@@ -179,6 +189,7 @@ function showModel() {
       <ModelResultOverlay
         v-if="showResult && gen.result.value"
         :result="gen.result.value"
+        :publish="publishContext"
         :textures-link="area.bbox.value ? { path: '/textures', query: { bbox: bboxToPath(area.bbox.value) } } : undefined"
         @close="showResult = false"
       />
