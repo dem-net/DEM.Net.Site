@@ -91,8 +91,9 @@ describe('terrainModelPath', () => {
       buildingsColor: '#945200',
       withHighways: 'false',
       withTerrain: 'false',
-      centerOnOrigin: 'true',
     })
+    // API default (centered): with terrain too, otherwise the model sits in Web Mercator coordinates
+    expect(q.centerOnOrigin).toBeUndefined()
     expect(q.clientConnectionId).toBeUndefined()
     expect(q.withSkiPistes).toBeUndefined()
   })

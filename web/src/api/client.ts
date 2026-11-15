@@ -130,7 +130,7 @@ export function osmQuery(osm: OsmOptions) {
     buildingsColor: osm.buildingsColor,
     withHighways: osm.osmHighways,
     withTerrain: !osm.osmOnly,
-    centerOnOrigin: osm.osmOnly,
+    // centerOnOrigin is left to the API default (true): false keeps Web Mercator coordinates, far off the viewer's frame
   }
 }
 
