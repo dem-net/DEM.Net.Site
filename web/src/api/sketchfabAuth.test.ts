@@ -25,21 +25,31 @@ function memoryStorage(): Storage {
 describe('Sketchfab login state', () => {
   it('sends a random nonce, not the model id, as state', () => {
     const s = memoryStorage()
-    const state = new URL(beginSketchfabLogin('model-42', s)).searchParams.get('state')
+    const state = new URL(beginSketchfabLogin('model-42', null, s)).searchParams.get('state')
     expect(state).toBeTruthy()
     expect(state).not.toContain('model-42')
   })
 
   it('returns the model id once for the matching state', () => {
     const s = memoryStorage()
-    const state = new URL(beginSketchfabLogin('model-42', s)).searchParams.get('state')
-    expect(completeSketchfabLogin(state, s)).toBe('model-42')
+    const state = new URL(beginSketchfabLogin('model-42', null, s)).searchParams.get('state')
+    expect(completeSketchfabLogin(state, s)).toEqual({ modelId: 'model-42', publish: null })
     expect(completeSketchfabLogin(state, s)).toBeNull() // single use
+  })
+
+  it('keeps the form prefill across the redirect, and drops an invalid one', () => {
+    const publish = { lon: 7.3, lat: 46.04, link: 'https://elevationapi.com/terrain?bbox=1,2,3,4', linkLabel: 'Generate this model' }
+    const s = memoryStorage()
+    let state = new URL(beginSketchfabLogin('model-42', publish, s)).searchParams.get('state')
+    expect(completeSketchfabLogin(state, s)).toEqual({ modelId: 'model-42', publish })
+
+    state = new URL(beginSketchfabLogin('model-42', { ...publish, link: 'javascript:alert(1)' }, s)).searchParams.get('state')
+    expect(completeSketchfabLogin(state, s)).toEqual({ modelId: 'model-42', publish: null })
   })
 
   it('refuses a state this tab did not issue', () => {
     const s = memoryStorage()
-    beginSketchfabLogin('model-42', s)
+    beginSketchfabLogin('model-42', null, s)
     expect(completeSketchfabLogin('attacker-state', s)).toBeNull()
     expect(completeSketchfabLogin(null, memoryStorage())).toBeNull()
     expect(completeSketchfabLogin('x', null)).toBeNull()
@@ -90,7 +100,7 @@ describe('Sketchfab popup login', () => {
   })
 
   it('does not treat redirect-login states as popup states', () => {
-    const state = new URL(beginSketchfabLogin('m', memoryStorage())).searchParams.get('state')
+    const state = new URL(beginSketchfabLogin('m', null, memoryStorage())).searchParams.get('state')
     expect(isPopupState(state)).toBe(false)
     expect(isPopupState(null)).toBe(false)
   })

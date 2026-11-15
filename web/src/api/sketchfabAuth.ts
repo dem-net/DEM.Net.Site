@@ -1,4 +1,6 @@
+import { parsePublishContext } from '@/composables/sketchfabPrefill'
 import { sketchfabLoginUrl } from './client'
+import type { PublishContext } from './types'
 
 /**
  * CSRF protection for the Sketchfab implicit-grant login (full-page redirect fallback).
@@ -10,6 +12,8 @@ const KEY = 'dem.sketchfabAuth'
 interface Pending {
   nonce: string
   modelId: string
+  /** Form prefill (place, link), so the redirect does not lose it. */
+  publish?: PublishContext | null
 }
 
 function store(): Storage | null {
@@ -21,10 +25,14 @@ function store(): Storage | null {
 }
 
 /** Remembers the model to publish and returns the Sketchfab authorize URL to navigate to. */
-export function beginSketchfabLogin(modelId: string, storage: Storage | null = store()): string {
+export function beginSketchfabLogin(
+  modelId: string,
+  publish: PublishContext | null = null,
+  storage: Storage | null = store(),
+): string {
   const nonce = crypto.randomUUID()
   try {
-    storage?.setItem(KEY, JSON.stringify({ nonce, modelId } satisfies Pending))
+    storage?.setItem(KEY, JSON.stringify({ nonce, modelId, publish } satisfies Pending))
   } catch {
     /* storage blocked: the callback will refuse the login */
   }
@@ -102,8 +110,13 @@ export function popupSketchfabLogin(signal?: AbortSignal): Promise<string> {
   })
 }
 
-/** Returns the model id when `state` matches the pending login, else null. Always clears the pending login. */
-export function completeSketchfabLogin(state: string | null, storage: Storage | null = store()): string | null {
+export interface CompletedLogin {
+  modelId: string
+  publish: PublishContext | null
+}
+
+/** Returns the model (and form prefill) when `state` matches the pending login, else null. Always clears the pending login. */
+export function completeSketchfabLogin(state: string | null, storage: Storage | null = store()): CompletedLogin | null {
   let pending: Pending | null = null
   try {
     const raw = storage?.getItem(KEY)
@@ -113,5 +126,5 @@ export function completeSketchfabLogin(state: string | null, storage: Storage | 
     return null
   }
   if (!state || !pending?.nonce || pending.nonce !== state || !pending.modelId) return null
-  return pending.modelId
+  return { modelId: pending.modelId, publish: parsePublishContext(pending.publish) }
 }

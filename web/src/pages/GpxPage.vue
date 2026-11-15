@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl'
 import { computed, nextTick, ref, shallowRef } from 'vue'
+import { useRouter } from 'vue-router'
 import { FileUp, Route, X } from '@lucide/vue'
 import { api } from '@/api/client'
+import type { PublishContext } from '@/api/types'
 import BaseMap from '@/components/map/BaseMap.vue'
 import { bboxSizeKm, fitBBox, padBBox } from '@/components/map/mapContext'
 import GenerateBlock from '@/components/GenerateBlock.vue'
@@ -124,10 +126,23 @@ const sizeLabel = computed(() => {
 
 const layout = ref<InstanceType<typeof ToolLayout>>()
 
+const router = useRouter()
+/** Sketchfab prefill: the track's place, and the page that made the model (tracks are not stored). */
+const publishContext = ref<PublishContext | null>(null)
+
 async function generate() {
   const f = file.value
   if (!f) return
   showResult.value = false
+  const b = summary.value?.bbox
+  publishContext.value = b
+    ? {
+        lon: (b.west + b.east) / 2,
+        lat: (b.south + b.north) / 2,
+        link: new URL(router.resolve('/gpx').href, location.origin).href,
+        linkLabel: 'Made with GPX to 3D on Elevation API',
+      }
+    : null
   const done = gen.run((id, signal) => api.gpxModel(f, options, track3D.value, id, signal))
   // On mobile the footer scrolls with the options: show the progress, then the model.
   await nextTick()
@@ -212,7 +227,12 @@ function showModel() {
 
     <template #map>
       <BaseMap @ready="onReady" />
-      <ModelResultOverlay v-if="showResult && gen.result.value" :result="gen.result.value" @close="showResult = false" />
+      <ModelResultOverlay
+        v-if="showResult && gen.result.value"
+        :result="gen.result.value"
+        :publish="publishContext"
+        @close="showResult = false"
+      />
     </template>
   </ToolLayout>
 </template>

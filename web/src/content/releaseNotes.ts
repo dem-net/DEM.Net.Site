@@ -21,6 +21,7 @@ export const releaseNotes: ReleaseNotes[] = [
           'The size estimate now includes the OpenStreetMap features.',
           'Mapterhorn: choose the resolution (Low, Medium, High, Best), with the sample spacing and estimated size of each. Buildings are white by default.',
           'Stats: each new generation is named after its place (older ones show "Unknown location").',
+          'Publishing on Sketchfab fills in the model name from its location, and the description links back to the model.',
         ],
       },
       {

@@ -3,7 +3,7 @@ import { computed, defineAsyncComponent, ref } from 'vue'
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
 import { Download, ExternalLink, Layers, Map as MapIcon } from '@lucide/vue'
 import { safeUrl } from '@/api/client'
-import type { ModelResult } from '@/api/types'
+import type { ModelResult, PublishContext } from '@/api/types'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
 import SketchfabPublishDialog from './SketchfabPublishDialog.vue'
 import GlbViewer from './viewers/GlbViewer.vue'
@@ -14,6 +14,8 @@ const props = defineProps<{
   result: ModelResult
   /** Textures page for the same area (texture, normal map, height map). */
   texturesLink?: RouteLocationRaw
+  /** Sketchfab form prefill (place and link), captured when the model was generated. */
+  publish?: PublishContext | null
 }>()
 const emit = defineEmits<{ close: [] }>()
 
@@ -71,7 +73,7 @@ const elevationRange = computed(
           <Layers class="size-3.5" /> Get them on the Textures page
         </RouterLink>
       </p>
-      <SketchfabPublishDialog v-if="canPublish" :key="result.id" ref="publishDialog" :model-id="result.id" />
+      <SketchfabPublishDialog v-if="canPublish" :key="result.id" ref="publishDialog" :model-id="result.id" :publish="publish" />
 
       <div v-if="result.attributions.length" class="mt-4 border-t border-line pt-3">
         <p class="field-label">Credits</p>
