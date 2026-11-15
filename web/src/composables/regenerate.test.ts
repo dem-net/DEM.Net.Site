@@ -11,6 +11,7 @@ const gen = (kind: Generation['kind'], format = 'glTF', dataset = 'SRTM_GL3'): G
   sizeBytes: 1,
   date: '2026-07-01',
   bbox: { west: 6.82, south: 45.8, east: 6.91, north: 45.86 },
+  place: null,
 })
 
 describe('regenerateLink', () => {

@@ -20,6 +20,7 @@ export const releaseNotes: ReleaseNotes[] = [
           'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',
           'The size estimate now includes the OpenStreetMap features.',
           'Mapterhorn: choose the resolution (Low, Medium, High, Best), with the sample spacing and estimated size of each. Buildings are white by default.',
+          'Stats: each new generation is named after its place (older ones show "Unknown location").',
         ],
       },
       {

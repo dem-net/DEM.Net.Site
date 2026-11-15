@@ -310,6 +310,8 @@ function smallest(found: number[]): number | null {
 
 /** Other generations listed under the clicked one. */
 const POPUP_ROWS = 6
+/** Generations recorded before place names (the API names new ones a few seconds after they are made). */
+const UNKNOWN_PLACE = 'Unknown location'
 
 // The popup content is rendered by Vue (hidden element below) and handed to MapLibre, so it updates
 // when the details (options, model URL) arrive.
@@ -493,11 +495,11 @@ async function focus(i: number) {
                 <span class="mt-1.5 size-2.5 shrink-0 rounded-sm" :style="{ background: colors.get(gens[i].dataset) }" aria-hidden="true" />
                 <span class="min-w-0 flex-1">
                   <span class="flex items-baseline justify-between gap-2 text-sm">
-                    <span class="truncate font-medium text-ink">{{ gens[i].dataset }}</span>
+                    <span class="truncate font-medium" :class="gens[i].place ? 'text-ink' : 'text-ink-3'">{{ gens[i].place ?? UNKNOWN_PLACE }}</span>
                     <span v-if="gens[i].sizeBytes !== null" class="shrink-0 text-xs text-ink-3 tabular-nums">{{ formatBytes(gens[i].sizeBytes!) }}</span>
                   </span>
                   <span class="block truncate text-xs text-ink-3">
-                    {{ [KIND_LABELS[gens[i].kind], gens[i].format.replaceAll(',', ', ')].filter(Boolean).join(' · ') }}
+                    {{ [gens[i].dataset, KIND_LABELS[gens[i].kind], gens[i].format.replaceAll(',', ', ')].filter(Boolean).join(' · ') }}
                   </span>
                 </span>
               </button>
@@ -607,7 +609,8 @@ async function focus(i: number) {
               <li class="flex items-start gap-2">
                 <span class="mt-0.5 size-2.5 shrink-0 rounded-sm" :style="{ background: colors.get(gens[i].dataset) }" />
                 <span class="min-w-0 flex-1">
-                  <span class="block font-medium text-ink">{{ gens[i].dataset }} · {{ KIND_LABELS[gens[i].kind] }}</span>
+                  <span class="block font-semibold" :class="gens[i].place ? 'text-ink' : 'text-ink-3'">{{ gens[i].place ?? UNKNOWN_PLACE }}</span>
+                  <span class="block text-ink-2">{{ gens[i].dataset }} · {{ KIND_LABELS[gens[i].kind] }}</span>
                   <span class="block text-ink-3">
                     {{
                       [gens[i].format.replaceAll(',', ', '), gens[i].sizeBytes !== null ? formatBytes(gens[i].sizeBytes!) : null, formatDate(gens[i].date)]
