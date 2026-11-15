@@ -20,8 +20,8 @@ export function useModelOptions(overrides: Partial<ModelOptions> = {}) {
 export const OSM_DEFAULTS: Readonly<OsmOptions> = Object.freeze({
   osmBuildings: true,
   useOsmBuildingsColor: false,
-  buildingsColor: '#945200',
-  osmPistesSki: false,
+  buildingsColor: '#ffffff',
+  osmHighways: true,
   osmOnly: false,
 })
 

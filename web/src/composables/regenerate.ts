@@ -54,7 +54,7 @@ export function osmOptionsFromApi(o: ApiOptions): OsmOptions {
     osmBuildings: bool(o.withBuildings, true),
     useOsmBuildingsColor: bool(o.withBuildingsColors, false),
     buildingsColor: o.buildingsColor && HEX_COLOR.test(o.buildingsColor) ? o.buildingsColor : OSM_DEFAULTS.buildingsColor,
-    osmPistesSki: bool(o.withSkiPistes, false),
+    osmHighways: bool(o.withHighways, true),
     osmOnly: !bool(o.withTerrain, true),
   }
 }

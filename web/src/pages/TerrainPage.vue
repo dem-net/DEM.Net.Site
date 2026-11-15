@@ -69,9 +69,7 @@ function shareUrl(): string {
   return new URL(router.resolve({ path: route.path, query }).href, location.origin).href
 }
 const osm = useOsmOptions(osmFromQuery(route.query))
-/** OSM features (buildings, ski pistes) are temporarily disabled. Set to true to bring them back. */
-const OSM_AVAILABLE = false
-const withOsm = ref(OSM_AVAILABLE && route.query.osm === '1')
+const withOsm = ref(route.query.osm === '1')
 const gen = useGenerate()
 const showResult = ref(false)
 
@@ -92,6 +90,7 @@ const country = useCountry(() => {
 
 const disabledReason = computed(() => {
   if (!area.bbox.value) return 'Draw an area on the map first.'
+  if (withOsm.value && !osm.osmBuildings && !osm.osmHighways) return 'Choose buildings or roads.'
   if (size.overLimit.value) return 'Too large: see the estimated size above.'
   return undefined
 })
@@ -131,12 +130,8 @@ function showModel() {
           <ToggleSwitch
             v-model="withOsm"
             label="Add OpenStreetMap features"
-            hint="Buildings and ski pistes on top of the terrain"
-            :disabled="!OSM_AVAILABLE"
+            hint="Buildings and roads on top of the terrain"
           />
-          <p v-if="!OSM_AVAILABLE" class="mt-2 rounded-md bg-subtle px-2.5 py-1.5 text-xs text-ink-2" role="note">
-            This feature is temporarily unavailable. It will be back soon!
-          </p>
           <div v-if="withOsm" class="mt-3 space-y-3 border-t border-line pt-3">
             <ToggleSwitch v-model="osm.osmBuildings" label="Buildings" />
             <template v-if="osm.osmBuildings">
@@ -146,7 +141,7 @@ function showModel() {
                 <input v-model="osm.buildingsColor" type="color" class="h-8 w-12 cursor-pointer rounded border border-line bg-transparent" />
               </label>
             </template>
-            <ToggleSwitch v-model="osm.osmPistesSki" label="Ski pistes" />
+            <ToggleSwitch v-model="osm.osmHighways" label="Roads" />
             <ToggleSwitch v-model="osm.osmOnly" label="Features only" hint="Leave out the terrain mesh" />
           </div>
         </div>

@@ -46,7 +46,8 @@ const barClass = computed(() => ({ ok: 'bg-accent', near: 'bg-warn', over: 'bg-d
     <div v-if="level === 'over' && !loading" class="mt-2 rounded-lg px-3 py-2" :class="blocking ? 'bg-danger-soft text-danger' : 'bg-warn-soft text-warn'" role="alert">
       <p v-if="blocking">This model is too large to generate.</p>
       <p v-else>This model will probably be too large to generate.</p>
-      <template v-if="fitDetail !== null">
+      <p v-if="estimate?.message" class="mt-0.5 text-xs opacity-90">{{ estimate.message }}</p>
+      <template v-else-if="fitDetail !== null">
         <p class="mt-0.5 text-xs opacity-90">Lowering the mesh detail to {{ fitDetail }}% should bring it under the limit.</p>
         <button type="button" class="btn btn-secondary mt-2 w-full py-1.5" @click="emit('fit', fitDetail)">
           <Wand class="size-4" /> Reduce to fit
