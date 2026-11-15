@@ -216,6 +216,8 @@ export interface Generation {
   date: string
   /** Null when unknown (GPX models recorded before the statistics database). */
   bbox: BBox | null
+  /** "Verbier, Switzerland"; null for generations recorded before place names (or still being looked up). */
+  place: string | null
 }
 
 export interface GenerationStats {

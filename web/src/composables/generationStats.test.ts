@@ -30,9 +30,9 @@ describe('toGenerationStats', () => {
       ],
     })
     expect(r.generations).toEqual([
-      { id: null, dataset: 'SRTM_GL3', kind: 'terrain', format: 'glTF', sizeBytes: 603656, date: '2026-11-14', bbox: { west: 6.82, south: 45.8, east: 6.91, north: 45.86 } },
-      { id: null, dataset: 'SRTM_GL3', kind: 'gpx', format: 'glTF', sizeBytes: 480000, date: '2026-06-02', bbox: null },
-      { id: null, dataset: 'SRTM_GL3', kind: 'textures', format: 'heightmap', sizeBytes: null, date: '2026-07-01', bbox: { west: 1, south: 2, east: 3, north: 4 } },
+      { id: null, dataset: 'SRTM_GL3', kind: 'terrain', format: 'glTF', sizeBytes: 603656, date: '2026-11-14', bbox: { west: 6.82, south: 45.8, east: 6.91, north: 45.86 }, place: null },
+      { id: null, dataset: 'SRTM_GL3', kind: 'gpx', format: 'glTF', sizeBytes: 480000, date: '2026-06-02', bbox: null, place: null },
+      { id: null, dataset: 'SRTM_GL3', kind: 'textures', format: 'heightmap', sizeBytes: null, date: '2026-07-01', bbox: { west: 1, south: 2, east: 3, north: 4 }, place: null },
     ])
   })
 
@@ -44,6 +44,19 @@ describe('toGenerationStats', () => {
     })
     expect(r.generations[0]).toMatchObject({ id: 42, dataset: 'AW3D30', kind: 'osm', bbox: { west: 1, south: 2, east: 3, north: 4 } })
   })
+
+  it('reads the place name, null for older generations (and older APIs)', () => {
+    const r = toGenerationStats({
+      updatedAt: '',
+      columns: [...columns, 'place'],
+      rows: [
+        ['Mapterhorn', 'osm', 'glTF', 10, '2026-11-15', 7.26, 46.03, 7.34, 46.06, 'Fionnay, Switzerland'],
+        ['NASADEM', 'terrain', 'glTF', 10, '2026-11-14', 1, 2, 3, 4, null],
+        ['NASADEM', 'terrain', 'glTF', 10, '2026-11-14', 1, 2, 3, 4, '  '],
+      ],
+    })
+    expect(r.generations.map((x) => x.place)).toEqual(['Fionnay, Switzerland', null, null])
+  })
 })
 
 const g = (dataset: string, kind: Generation['kind'], sizeBytes: number | null, date: string, mapped = true): Generation => ({
@@ -54,6 +67,7 @@ const g = (dataset: string, kind: Generation['kind'], sizeBytes: number | null, 
   sizeBytes,
   date,
   bbox: mapped ? { west: 0, south: 0, east: 2, north: 1 } : null,
+  place: null,
 })
 
 const sample = [

@@ -242,8 +242,8 @@ const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFin
 /** Reads the rows by column name; malformed rows are dropped. */
 export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
   const col = (name: string) => r.columns.indexOf(name)
-  const [id, ds, kind, format, size, date, w, s, e, n] = [
-    'id', 'dataset', 'kind', 'format', 'sizeBytes', 'date', 'west', 'south', 'east', 'north',
+  const [id, ds, kind, format, size, date, w, s, e, n, place] = [
+    'id', 'dataset', 'kind', 'format', 'sizeBytes', 'date', 'west', 'south', 'east', 'north', 'place',
   ].map(col)
   const generations: Generation[] = []
   for (const row of r.rows ?? []) {
@@ -258,6 +258,7 @@ export function toGenerationStats(r: GenerationStatsResponse): GenerationStats {
       sizeBytes: isNum(row[size]) && row[size] >= 0 ? row[size] : null,
       date: row[date] as string,
       bbox: box.every(isNum) ? { west: box[0] as number, south: box[1] as number, east: box[2] as number, north: box[3] as number } : null,
+      place: typeof row[place] === 'string' && (row[place] as string).trim() ? (row[place] as string).trim().slice(0, 100) : null,
     })
   }
   return { updatedAt: r.updatedAt, generations }
