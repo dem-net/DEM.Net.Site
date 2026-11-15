@@ -56,7 +56,7 @@ const formats = computed(() => [
         <label
           v-for="q in MESH_QUALITIES"
           :key="q"
-          class="cursor-pointer rounded-lg border px-3 py-2 text-sm"
+          class="relative cursor-pointer rounded-lg border px-3 py-2 text-sm"
           :class="options.meshQuality === q ? 'border-accent bg-accent-soft' : 'border-line hover:bg-subtle'"
         >
           <input v-model="options.meshQuality" type="radio" :value="q" class="sr-only" />
@@ -76,7 +76,7 @@ const formats = computed(() => [
         <label
           v-for="f in formats"
           :key="f.value"
-          class="cursor-pointer rounded-lg border px-3 py-2 text-sm"
+          class="relative cursor-pointer rounded-lg border px-3 py-2 text-sm"
           :class="options.format === f.value ? 'border-accent bg-accent-soft' : 'border-line hover:bg-subtle'"
         >
           <input v-model="options.format" type="radio" :value="f.value" class="sr-only" />

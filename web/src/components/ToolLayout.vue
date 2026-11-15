@@ -120,7 +120,7 @@ defineExpose({ scrollToFooter, scrollToTop })
         <slot name="actions" />
       </div>
       <div
-        class="shrink-0 px-5 py-4 md:min-h-0 md:flex-1 md:shrink md:overflow-y-auto"
+        class="relative shrink-0 px-5 py-4 md:min-h-0 md:flex-1 md:shrink md:overflow-y-auto"
         :class="$slots.footer ? '' : 'pb-[max(1rem,env(safe-area-inset-bottom))]'"
       >
         <slot name="panel" />
