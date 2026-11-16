@@ -230,6 +230,12 @@ export function toTextureEstimates(r: TextureEstimateResponse): { estimates: Tex
   }
 }
 
+/**
+ * Every generation in one request: the API pages this endpoint (30 rows by default),
+ * so ask for its largest page (10000 rows).
+ */
+export const GENERATION_STATS_PATH = '/api/stats/generations?limit=10000'
+
 /** GET /api/stats/generations: rows of values in the order of `columns`. */
 export interface GenerationStatsResponse {
   updatedAt: string
@@ -296,7 +302,7 @@ export const api = {
   imagery: () => request<ImageryProvider[]>('/api/imagery'),
 
   /** Every successful model and texture generation (public statistics, refreshed every minute by the API). */
-  generationStats: async () => toGenerationStats(await request<GenerationStatsResponse>('/api/stats/generations')),
+  generationStats: async () => toGenerationStats(await request<GenerationStatsResponse>(GENERATION_STATS_PATH)),
 
   /** Options and model URL of up to 20 generations. */
   async generationDetails(ids: number[], signal?: AbortSignal): Promise<GenerationDetail[]> {
