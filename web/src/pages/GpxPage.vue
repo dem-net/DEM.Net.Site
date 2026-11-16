@@ -38,8 +38,9 @@ const input = ref<HTMLInputElement>()
 let map: MlMap | null = null
 
 /**
- * The GPX endpoint has no estimate mode, so estimate with the bbox endpoint over the track's
- * bounds plus the ~1 km margin the server adds around tracks. Approximate: warns, never blocks.
+ * Estimate with the bbox endpoint over the track's bounds plus the ~1 km margin the server adds around
+ * tracks: the GPX endpoint's own estimate (onlyEstimateSize) would upload the file again on every option
+ * change. Approximate: warns, never blocks.
  */
 const GPX_MARGIN_KM = 1
 const size = useSizeEstimate(() =>
