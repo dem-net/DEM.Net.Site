@@ -230,11 +230,38 @@ export function toTextureEstimates(r: TextureEstimateResponse): { estimates: Tex
   }
 }
 
-/** GET /api/stats/generations: rows of values in the order of `columns`. */
+/** GET /api/stats/generations: a page of rows, values in the order of `columns`. */
 export interface GenerationStatsResponse {
   updatedAt: string
   columns: string[]
   rows: unknown[][]
+  /** Cursor of the next page; absent on the last page (and with an older, unpaged API). */
+  next?: string | null
+}
+
+/** Safety stop for the page loop: 200 pages of 5000 rows is a million generations. */
+const MAX_STATS_PAGES = 200
+
+/**
+ * Reads every page, following `next`, into one response (columns and updatedAt of the first page).
+ * Stops on a missing, empty or repeated cursor, an empty page, or after MAX_STATS_PAGES.
+ */
+export async function readAllGenerationPages(
+  fetchPage: (cursor: string | null) => Promise<GenerationStatsResponse>,
+): Promise<GenerationStatsResponse> {
+  const first = await fetchPage(null)
+  const rows = [...(first.rows ?? [])]
+  const seen = new Set<string>()
+  let next = first.next
+  for (let pages = 1; next && !seen.has(next) && pages < MAX_STATS_PAGES; pages++) {
+    seen.add(next)
+    const page = await fetchPage(next)
+    if (!page.rows?.length) break
+    if (page.columns?.join() !== first.columns?.join()) break // columns changed between pages (API update): keep what matches
+    rows.push(...page.rows)
+    next = page.next
+  }
+  return { updatedAt: first.updatedAt, columns: first.columns, rows }
 }
 
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
@@ -295,8 +322,13 @@ export const api = {
 
   imagery: () => request<ImageryProvider[]>('/api/imagery'),
 
-  /** Every successful model and texture generation (public statistics, refreshed every minute by the API). */
-  generationStats: async () => toGenerationStats(await request<GenerationStatsResponse>('/api/stats/generations')),
+  /** Every successful model and texture generation (public statistics, refreshed every minute by the API), all pages. */
+  generationStats: async () =>
+    toGenerationStats(
+      await readAllGenerationPages((cursor) =>
+        request<GenerationStatsResponse>(`/api/stats/generations${cursor ? `?${query({ cursor })}` : ''}`),
+      ),
+    ),
 
   /** Options and model URL of up to 20 generations. */
   async generationDetails(ids: number[], signal?: AbortSignal): Promise<GenerationDetail[]> {
