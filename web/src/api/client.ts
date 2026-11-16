@@ -239,8 +239,8 @@ export interface GenerationStatsResponse {
   next?: string | null
 }
 
-/** Safety stop for the page loop: 200 pages of 5000 rows is a million generations. */
-const MAX_STATS_PAGES = 200
+/** Safety stop for the page loop: 20000 pages of 30 rows (the API default) is 600,000 generations. */
+const MAX_STATS_PAGES = 20000
 
 /**
  * Reads every page, following `next`, into one response (columns and updatedAt of the first page).
