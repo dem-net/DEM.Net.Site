@@ -33,7 +33,8 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - **Size estimate:**
     - Adding `onlyEstimateSize=true` to the bbox and OSM endpoints returns `{success, estimatedModelFileSizeMB, estimatedModelFileSizeAfterReduceMB, maximumAllowedFileSizeMB}` in about 0.25 s. An over-limit request still returns HTTP 200, with `success: false`.
     - The estimate is approximate: real files differ by 2–3× in either direction. The server uses the same number to refuse requests, so it's the right gate.
-    - The GPX endpoint ignores `onlyEstimateSize`. The GPX page estimates with the bbox endpoint over the track bounds plus 1 km, and only warns.
+    - The GPX endpoint also accepts `onlyEstimateSize=true` (since DEM.Net.WebAPI#27): same response as the bbox endpoint (`meshQualityEstimates` included), computed over the server's own margin around the track, but each call uploads the file again.
+    - The GPX page still estimates with the bbox endpoint over the track bounds plus 1 km, so option changes don't re-upload the track. It only warns.
     - `useSizeEstimate()` handles the debouncing and the "Reduce to fit" detail level (`detailToFit`, linear in `meshReduceFactor`).
   - `meshReduceFactor` (0.1–1) is the UI's "Mesh detail" (10–100 %, default 50 %).
   - `meshQuality` (1–4) is the Mapterhorn "Resolution" (Low, Medium, High, Best; default Medium), shown when the dataset has `isMapterhorn`. Always sent, other datasets ignore it. The estimate's `meshQualityEstimates` give each option's spacing and size. Share-link key `resolution=low|high|best` (`quality` is the texture quality).
