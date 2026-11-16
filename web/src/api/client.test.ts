@@ -4,7 +4,6 @@ import {
   API_BASE,
   bboxToPath,
   meshReduceFactor,
-  readAllGenerationPages,
   safeUrl,
   sketchfabLoginUrl,
   terrainModelPath,
@@ -14,7 +13,6 @@ import {
   toQualityEstimates,
   toTextureResult,
 } from './client'
-import type { GenerationStatsResponse } from './client'
 import type { ModelOptions, TextureOptions } from './types'
 import { parseBBoxParam } from '@/composables/useAreaPicker'
 
@@ -265,46 +263,5 @@ describe('mesh detail and size estimate', () => {
     expect(est.searchParams.get('onlyEstimateSize')).toBe('true')
     const gen = new URL(terrainModelPath(bbox, opts, null, null), 'https://x')
     expect(gen.searchParams.has('onlyEstimateSize')).toBe(false)
-  })
-})
-
-describe('generation stats pages', () => {
-  const page = (rows: number[], next?: string, columns = ['id']): GenerationStatsResponse => ({
-    updatedAt: `t${rows[0] ?? 0}`,
-    columns,
-    rows: rows.map((r) => [r]),
-    next,
-  })
-
-  it('follows next until the last page, keeping the first page time and columns', async () => {
-    const pages: Record<string, GenerationStatsResponse> = { '': page([1, 2], 'a'), a: page([3, 4], 'b'), b: page([5]) }
-    const cursors: (string | null)[] = []
-    const r = await readAllGenerationPages(async (c) => {
-      cursors.push(c)
-      return pages[c ?? '']
-    })
-    expect(cursors).toEqual([null, 'a', 'b'])
-    expect(r.rows).toEqual([[1], [2], [3], [4], [5]])
-    expect(r.updatedAt).toBe('t1')
-    expect(r).not.toHaveProperty('next')
-  })
-
-  it('reads an unpaged (older) API response as is', async () => {
-    let calls = 0
-    const r = await readAllGenerationPages(async () => (calls++, page([1, 2, 3])))
-    expect(calls).toBe(1)
-    expect(r.rows).toHaveLength(3)
-  })
-
-  it('stops on a repeated cursor, an empty page or changed columns', async () => {
-    let calls = 0
-    await readAllGenerationPages(async () => (calls++, page([1], 'same')))
-    expect(calls).toBe(2)
-
-    const empty = await readAllGenerationPages(async (c) => (c ? page([], 'x') : page([1], 'a')))
-    expect(empty.rows).toEqual([[1]])
-
-    const changed = await readAllGenerationPages(async (c) => (c ? page([2], undefined, ['id', 'x']) : page([1], 'a')))
-    expect(changed.rows).toEqual([[1]])
   })
 })
