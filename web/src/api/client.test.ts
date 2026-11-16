@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   absoluteUrl,
+  GENERATION_STATS_PATH,
   API_BASE,
   bboxToPath,
   meshReduceFactor,
@@ -263,5 +264,11 @@ describe('mesh detail and size estimate', () => {
     expect(est.searchParams.get('onlyEstimateSize')).toBe('true')
     const gen = new URL(terrainModelPath(bbox, opts, null, null), 'https://x')
     expect(gen.searchParams.has('onlyEstimateSize')).toBe(false)
+  })
+})
+
+describe('generation stats', () => {
+  it('asks for every generation in one request (largest API page)', () => {
+    expect(GENERATION_STATS_PATH).toBe('/api/stats/generations?limit=10000')
   })
 })
