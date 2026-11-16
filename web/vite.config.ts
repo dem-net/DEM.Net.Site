@@ -1,23 +1,37 @@
-import { copyFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
+import { HEAD_BLOCK_RE, HOME_SEO, INDEXED_PAGES, headBlock, htmlFileFor, sitemapXml } from './src/seo'
 
-// GitHub Pages has no SPA rewrites: serving index.html as 404.html lets deep links
-// (e.g. /terrain, /sketchfab_oauth2#access_token=…) boot the app and be routed client-side.
-function spaFallback(): Plugin {
+/**
+ * GitHub Pages has no SPA rewrites. Each indexed page gets its own copy of index.html
+ * (/terrain → terrain.html) with its title, description and canonical, so it is served
+ * with HTTP 200: Google drops pages answered with 404, whatever they render. Every other
+ * path (/sketchfab_oauth2#access_token=…, old /playground_* URLs, typos) still boots the
+ * app through 404.html, which is marked noindex. Also writes sitemap.xml.
+ */
+function pageHtml(): Plugin {
   let outDir = 'dist'
   return {
-    name: 'spa-404-fallback',
-    apply: 'build',
+    name: 'page-html',
     configResolved(config) {
       outDir = config.build.outDir
     },
+    // Dev and build: the home page's tags replace the placeholder comment in index.html.
+    transformIndexHtml: (html) => html.replace(/<!-- seo:[^>]*-->/, headBlock(HOME_SEO)),
     closeBundle() {
-      copyFileSync(resolve(outDir, 'index.html'), resolve(outDir, '404.html'))
+      const index = readFileSync(resolve(outDir, 'index.html'), 'utf8')
+      if (!HEAD_BLOCK_RE.test(index)) throw new Error('page-html: SEO block missing from index.html')
+      for (const page of INDEXED_PAGES) {
+        if (page.path === '/') continue
+        writeFileSync(resolve(outDir, htmlFileFor(page.path)), index.replace(HEAD_BLOCK_RE, headBlock(page)))
+      }
+      writeFileSync(resolve(outDir, '404.html'), index.replace(HEAD_BLOCK_RE, headBlock(undefined)))
+      writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapXml())
     },
   }
 }
@@ -80,7 +94,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     // Same default as API_BASE in src/api/client.ts
     contentSecurityPolicy(loadEnv(mode, process.cwd(), 'VITE_').VITE_API_BASEURL || 'https://api.elevationapi.com'),
-    spaFallback(),
+    pageHtml(),
   ],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },

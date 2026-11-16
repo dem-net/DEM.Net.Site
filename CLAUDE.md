@@ -16,7 +16,7 @@ npm test             # Vitest (unit tests: src/**/*.test.ts)
 npx vitest run src/api/client.test.ts   # single test file
 npm run lint         # ESLint flat config (eslint.config.js)
 npm run typecheck    # vue-tsc -b
-npm run build        # vue-tsc -b && vite build → web/dist (also writes 404.html)
+npm run build        # vue-tsc -b && vite build → web/dist (also writes one .html per page, 404.html, sitemap.xml)
 ```
 
 The API base URL defaults to `https://api.elevationapi.com` in `src/api/client.ts`. To use a local backend, set `VITE_API_BASEURL` in `web/.env.development.local`. Don't rely on `web/.env`: the root `.gitignore` excludes `.env`, so CI never sees it. The API sends CORS headers for any origin, so there's no dev proxy.
@@ -103,7 +103,10 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - The API's CORS allows any origin *without* credentials, so the SignalR connection uses `withCredentials: false`.
   - The backend (`/Users/xfischer/Repos/DEM.Net.WebAPI`) throttles generation and exports per client IP (1 per 5 s, 1 running at a time by default); a second request gets HTTP 429 with `Retry-After`. Size estimates aren't throttled.
 - **Analytics**: the self-hosted cookieless tracker (`https://m.elevationapi.com/script.js`, from the `add-analytics` skill in `~/Repos/analytics`) is loaded in `index.html` with `data-spa`.
-  - No `data-404`: `404.html` is a copy of `index.html` and serves every deep link, so every deep-link visit would be counted as "not found".
+  - No `data-404`: `404.html` is a copy of `index.html` that also serves `/sketchfab_oauth2` and the old `/playground_*` URLs, which would be counted as "not found".
   - The CSP allows `m.elevationapi.com` in `script-src` and `connect-src`. `/privacy` (`PrivacyPage.vue`) holds the legal text and the `data-analytics-optout` button.
   - Its consent exemption forbids any other analytics, tracking script, cookie or identifier. Storage is limited to the existing functional entries (basemap and panel width in localStorage, OAuth nonce in sessionStorage), which are disclosed on `/privacy`; update that page if this changes.
-- **GitHub Pages SPA routing**: the build copies `index.html` to `404.html` (a plugin in `vite.config.ts`), so deep links load the app.
+- **GitHub Pages SPA routing and indexing** (`pageHtml()` in `vite.config.ts`, metadata in `src/seo.ts`):
+  - Each page in `INDEXED_PAGES` gets its own copy of `index.html` (`/terrain` → `terrain.html`) with its title, description, canonical and Open Graph tags, so GitHub Pages answers HTTP 200. Google drops pages served with a 404 status, whatever they render.
+  - Every other path boots the app through `404.html` (marked `noindex`). The build also writes `sitemap.xml`; `public/robots.txt` points to it.
+  - The router sets the same head tags on client-side navigation. Add new public pages to `INDEXED_PAGES` (a test checks each entry is a real route; the route table is in `src/routes.ts`).
