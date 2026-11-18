@@ -82,6 +82,10 @@
   .btn-secondary {
     @apply border border-line bg-surface text-ink hover:bg-subtle;
   }
+  /* Destructive actions (deleting a gallery model), after a confirmation step */
+  .btn-danger {
+    @apply border border-danger bg-danger-soft text-danger hover:brightness-95;
+  }
   .field-label {
     @apply mb-1.5 block text-xs font-semibold tracking-wide text-ink-2 uppercase;
   }

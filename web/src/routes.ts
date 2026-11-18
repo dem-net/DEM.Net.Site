@@ -33,6 +33,21 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('./pages/StatsPage.vue'),
     meta: { title: 'Statistics', fullBleed: true },
   },
+  { path: '/gallery', name: 'gallery', component: () => import('./pages/GalleryPage.vue'), meta: { title: 'Gallery' } },
+  // Before /gallery/:id. Not indexed (not in INDEXED_PAGES); the API emails the owner a link to it (#login=…).
+  {
+    path: '/gallery/admin',
+    name: 'gallery-admin',
+    component: () => import('./pages/GalleryAdminPage.vue'),
+    meta: { title: 'Gallery review' },
+  },
+  // The publisher's private link adds #token=… (galleryOwnerLink).
+  {
+    path: '/gallery/:id',
+    name: 'gallery-item',
+    component: () => import('./pages/GalleryItemPage.vue'),
+    meta: { title: 'Gallery' },
+  },
   { path: '/expo', name: 'expo', component: () => import('./pages/ExpoPage.vue'), meta: { title: 'Expo' } },
   { path: '/faq', name: 'faq', component: () => import('./pages/FaqPage.vue'), meta: { title: 'FAQ' } },
   { path: '/about', name: 'about', component: () => import('./pages/AboutPage.vue'), meta: { title: 'About' } },

@@ -17,6 +17,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Website',
         items: [
+          'New Gallery: publish a glTF model with a poster and a turntable made in your browser, browse the models others shared, download them or generate them again. Every model is reviewed before it appears.',
           'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',
           'The size estimate now includes the OpenStreetMap features.',
           'Mapterhorn: choose the resolution (Low, Medium, High, Best), with the sample spacing and estimated size of each. Buildings are white by default.',
@@ -29,6 +30,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Elevation API',
         items: [
+          'Gallery endpoints (api/gallery): anonymous submissions with a private delete link, review by the owner, paged listing of the published models.',
           'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
           'The OSM model size estimate counts buildings and roads (onlyEstimateSize=true), and "Features only" models (withTerrain=false) work again.',
           'Much faster OpenStreetMap models with Mapterhorn (a dense city went from minutes to seconds), and roads sit 50 cm above the terrain so they no longer flicker through it.',
