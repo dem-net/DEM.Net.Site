@@ -8,7 +8,7 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
  *   map=lon,lat,zoom[,bearing,pitch]   camera
  *   basemap=topo|streets               basemap
  *   relief=1                           3D relief on
- *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, resolution=low|high|best, adornments=0, boxed=1
+ *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, resolution=low|high|best, adornments=0, boxed=1, monuments=1
  *                                      model options that differ from the defaults (resolution: Mapterhorn)
  *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, roads=0, osmonly=1         OSM options that differ from the defaults (with osm=1)
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
@@ -17,7 +17,7 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
 
 /** Query keys owned by share links (removed from the address bar once applied). */
 export const SHARE_KEYS = [
-  'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'resolution', 'adornments', 'boxed',
+  'map', 'basemap', 'relief', 'dataset', 'format', 'texture', 'imagery', 'quality', 'z', 'detail', 'resolution', 'adornments', 'boxed', 'monuments',
   'buildings', 'buildingcolors', 'buildingcolor', 'roads', 'pistes', 'osmonly',
 ] as const
 
@@ -81,6 +81,7 @@ export function optionsToQuery(o: ModelOptions): Query {
   if (o.meshQuality !== d.meshQuality) q.resolution = RESOLUTION_NAMES[o.meshQuality]
   if (o.adornments !== d.adornments) q.adornments = o.adornments ? '1' : '0'
   if (o.boxed !== d.boxed) q.boxed = o.boxed ? '1' : '0'
+  if (o.boxMonuments !== d.boxMonuments) q.monuments = o.boxMonuments ? '1' : '0'
   return q
 }
 
@@ -110,6 +111,8 @@ export function optionsFromQuery(q: LocationQuery): Partial<ModelOptions> {
   if (adornments === '0' || adornments === '1') o.adornments = adornments === '1'
   const boxed = first(q, 'boxed')
   if (boxed === '0' || boxed === '1') o.boxed = boxed === '1'
+  const monuments = first(q, 'monuments')
+  if (monuments === '0' || monuments === '1') o.boxMonuments = monuments === '1'
   return o
 }
 

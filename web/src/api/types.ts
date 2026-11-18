@@ -87,6 +87,8 @@ export interface ModelOptions {
   adornments: boolean
   /** Walls and a bottom under the terrain, in a solid color (glTF only; STL models are always boxed). */
   boxed: boolean
+  /** Monument silhouettes on the box walls at the model's scale, as a height reference (boxed glTF only). */
+  boxMonuments: boolean
 }
 
 /** Server-side size estimate (`onlyEstimateSize=true`). Approximate: actual files can differ by 2–3×. */
