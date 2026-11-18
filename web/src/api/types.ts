@@ -85,6 +85,8 @@ export interface ModelOptions {
   meshQuality: MeshQuality
   /** 3D scale bar and north arrow next to the terrain (glTF only; the API's default is true). */
   adornments: boolean
+  /** Walls and a bottom under the terrain, in a solid color (glTF only; STL models are always boxed). */
+  boxed: boolean
 }
 
 /** Server-side size estimate (`onlyEstimateSize=true`). Approximate: actual files can differ by 2–3×. */

@@ -53,6 +53,7 @@ export function modelOptionsFromApi(g: Generation, o: ApiOptions): ModelOptions 
     meshDetail: clamp(Math.round(num(o.meshReduceFactor, 0.5) * 100), 10, 100),
     meshQuality: meshQuality(o.meshQuality, 2),
     adornments: bool(o.adornments, true),
+    boxed: bool(o.boxed, false),
   }
 }
 
