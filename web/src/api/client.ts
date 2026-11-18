@@ -115,6 +115,7 @@ function modelQuery(o: ModelOptions, connectionId: string | null) {
     meshReduceFactor: meshReduceFactor(o.meshDetail),
     meshQuality: o.meshQuality, // ignored by fixed resolution datasets
     adornments: o.format === 'glTF' && o.adornments,
+    boxed: o.format === 'glTF' && o.boxed,
     clientConnectionId: connectionId,
   }
 }

@@ -120,6 +120,12 @@ const formats = computed(() => [
           label="Scale bar & north arrow"
           hint="Add a 3D scale bar and a north arrow next to the terrain"
         />
+        <ToggleSwitch
+          v-if="isGltf"
+          v-model="options.boxed"
+          label="Boxed model"
+          hint="Close the terrain with walls and a bottom, like a block (STL models always are)"
+        />
       </div>
     </div>
   </div>

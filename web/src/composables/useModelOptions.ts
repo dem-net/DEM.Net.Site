@@ -12,6 +12,7 @@ export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
   meshDetail: 50,
   meshQuality: 2,
   adornments: true,
+  boxed: false,
 })
 
 export function useModelOptions(overrides: Partial<ModelOptions> = {}) {

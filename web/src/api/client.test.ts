@@ -27,6 +27,7 @@ const opts: ModelOptions = {
   meshDetail: 50,
   meshQuality: 2,
   adornments: true,
+  boxed: false,
 }
 
 describe('bbox', () => {
@@ -67,6 +68,7 @@ describe('terrainModelPath', () => {
       meshReduceFactor: '0.5',
       meshQuality: '2',
       adornments: 'true',
+      boxed: 'false',
       clientConnectionId: 'abc',
     })
   })
@@ -75,6 +77,12 @@ describe('terrainModelPath', () => {
     const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('adornments')
     expect(q({ ...opts, adornments: false })).toBe('false')
     expect(q({ ...opts, format: 'STL' })).toBe('false')
+  })
+
+  it('sends boxed=true when turned on, and never for STL (always boxed)', () => {
+    const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('boxed')
+    expect(q({ ...opts, boxed: true })).toBe('true')
+    expect(q({ ...opts, boxed: true, format: 'STL' })).toBe('false')
   })
 
   it('switches to the OSM endpoint and maps OSM flags', () => {
