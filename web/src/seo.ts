@@ -58,25 +58,25 @@ export const INDEXED_PAGES: PageSeo[] = [
     description: '3D terrain models made and shared by Elevation API users: turn them around, download them or generate them again.',
   },
   {
-    path: '/expo',
-    title: 'Expo · Elevation API',
-    description: 'People and projects using Elevation API: 3D printing, games, research and more.',
-  },
-  {
-    path: '/faq',
-    title: 'FAQ · Elevation API',
-    description: 'Answers about Elevation API: datasets, model formats, size limits, 3D printing and using the API.',
-  },
-  {
     path: '/about',
     title: 'About · Elevation API',
-    description: 'About Elevation API and the open source DEM.Net library behind it, release notes and how to support the project.',
+    description:
+      'About Elevation API and the open source DEM.Net library behind it: FAQ, projects using the API, release notes, datasets and how to support the project.',
   },
   {
     path: '/privacy',
     title: 'Privacy · Elevation API',
     description: 'What Elevation API measures and stores: cookieless audience measurement and published generation statistics.',
   },
+]
+
+/**
+ * Former pages, now sections of another page. The router redirects them; the build still writes their HTML file with
+ * the target's tags (canonical to the target), so old links and bookmarks get a 200 instead of the 404 fallback.
+ */
+export const MOVED_PAGES: { path: string; to: string }[] = [
+  { path: '/faq', to: '/about#faq' },
+  { path: '/expo', to: '/about#expo' },
 ]
 
 export function seoForPath(path: string): PageSeo | undefined {

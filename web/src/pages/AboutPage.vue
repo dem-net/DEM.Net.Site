@@ -1,14 +1,25 @@
 <script setup lang="ts">
 import { safeUrl } from '@/api/client'
 import BrandIcon from '@/components/BrandIcon.vue'
+import ExpoShowcase from '@/components/ExpoShowcase.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 import { useCatalog } from '@/composables/useCatalog'
-import { socialLinks } from '@/content/links'
+import Faq from '@/content/faq.md'
+import { discordLink, socialLinks } from '@/content/links'
 import { releaseNotes } from '@/content/releaseNotes'
 
 const SWISSTOPO_TERMS = 'https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html'
 
 const { datasets, imagery, loaded } = useCatalog()
+
+/** The page holds what were the FAQ and Expo pages (/faq and /expo redirect here). */
+const sections = [
+  { id: 'faq', label: 'FAQ' },
+  { id: 'expo', label: 'Expo' },
+  { id: 'release-notes', label: 'Release notes' },
+  { id: 'datasets', label: 'Elevation datasets' },
+  { id: 'imagery', label: 'Imagery providers' },
+]
 </script>
 
 <template>
@@ -33,6 +44,16 @@ const { datasets, imagery, loaded } = useCatalog()
           <a class="text-accent underline" href="https://github.com/dem-net/DEM.Net" target="_blank" rel="noopener noreferrer">GitHub</a>.
         </p>
       </div>
+      <nav aria-label="On this page" class="mt-6 flex flex-wrap gap-2">
+        <!-- RouterLink, not a plain anchor: the router's scrollBehavior keeps the target below the sticky header -->
+        <RouterLink
+          v-for="s in sections"
+          :key="s.id"
+          :to="{ hash: `#${s.id}` }"
+          class="rounded-full border border-line px-3 py-1 text-sm text-ink-2 hover:border-accent hover:text-accent"
+          >{{ s.label }}</RouterLink
+        >
+      </nav>
     </section>
 
     <section>
@@ -53,6 +74,21 @@ const { datasets, imagery, loaded } = useCatalog()
           </a>
         </li>
       </ul>
+    </section>
+
+    <section id="faq">
+      <h2 class="text-xl font-semibold">FAQ</h2>
+      <p class="mt-2 text-ink-3">
+        Answers to common questions. Need more? Ask the community on
+        <a class="underline" :href="discordLink.url" target="_blank" rel="noopener noreferrer">Discord</a>.
+      </p>
+      <Faq class="mt-2" />
+    </section>
+
+    <section id="expo">
+      <h2 class="text-xl font-semibold">Expo</h2>
+      <p class="mt-2 text-ink-3">People and projects using the API. Thank you for getting in touch!</p>
+      <ExpoShowcase class="mt-6" />
     </section>
 
     <SupportBlock />
@@ -90,7 +126,7 @@ const { datasets, imagery, loaded } = useCatalog()
       </ul>
     </section>
 
-    <section>
+    <section id="datasets">
       <h2 class="text-xl font-semibold">Elevation datasets</h2>
       <p class="mt-3 text-sm text-ink-2">
         Access to data provided by the

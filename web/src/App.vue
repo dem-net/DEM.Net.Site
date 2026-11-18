@@ -26,9 +26,7 @@ const tools: { to: string; label: string; isNew?: boolean }[] = [
 const headerSocial = socialLinks.filter((l) => l.brand !== 'sketchfab')
 const pages: { to: string; label: string; isNew?: boolean }[] = [
   { to: '/gallery', label: 'Gallery', isNew: true },
-  { to: '/expo', label: 'Expo' },
   { to: '/stats', label: 'Stats' },
-  { to: '/faq', label: 'FAQ' },
   { to: '/about', label: 'About' },
 ]
 </script>

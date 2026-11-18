@@ -1,5 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import HomePage from './pages/HomePage.vue'
+import { MOVED_PAGES } from './seo'
 
 export const routes: RouteRecordRaw[] = [
   { path: '/', name: 'home', component: HomePage, meta: { title: '' } },
@@ -48,8 +49,6 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('./pages/GalleryItemPage.vue'),
     meta: { title: 'Gallery' },
   },
-  { path: '/expo', name: 'expo', component: () => import('./pages/ExpoPage.vue'), meta: { title: 'Expo' } },
-  { path: '/faq', name: 'faq', component: () => import('./pages/FaqPage.vue'), meta: { title: 'FAQ' } },
   { path: '/about', name: 'about', component: () => import('./pages/AboutPage.vue'), meta: { title: 'About' } },
   { path: '/privacy', name: 'privacy', component: () => import('./pages/PrivacyPage.vue'), meta: { title: 'Privacy' } },
   // Registered as the OAuth redirect URI on Sketchfab: the path must not change.
@@ -59,6 +58,9 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('./pages/SketchfabPage.vue'),
     meta: { title: 'Publish to Sketchfab' },
   },
+
+  // Merged into the About page (see MOVED_PAGES in seo.ts)
+  ...MOVED_PAGES.map((m) => ({ path: m.path, redirect: m.to })),
 
   // Old URLs from the previous site
   { path: '/playground_3dbbox', redirect: { name: 'terrain' } },
