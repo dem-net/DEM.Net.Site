@@ -5,6 +5,8 @@ import type {
   BBox,
   Dataset,
   ElevationResponse,
+  GalleryReceipt,
+  GallerySubmission,
   Generation,
   GenerationDetail,
   GenerationStats,
@@ -34,13 +36,13 @@ export class ApiError extends Error {
   }
 }
 
-/** The API answers errors either as plain text or as JSON `{ statusCode, message }`. */
+/** The API answers errors as plain text, as JSON `{ statusCode, message }`, or as ProblemDetails `{ title, detail }`. */
 async function readError(res: Response): Promise<ApiError> {
   const text = await res.text()
   let message = text
   try {
     const body = JSON.parse(text)
-    message = body.message ?? body.title ?? text
+    message = body.message ?? body.detail ?? body.title ?? text
   } catch {
     /* plain-text error */
   }
@@ -388,12 +390,45 @@ export const api = {
     return toTextureEstimates(await request<TextureEstimateResponse>(texturePath(bbox, o, kinds, null, true), { signal }))
   },
 
+  /**
+   * Submits a generated glTF model to the gallery (multipart). The model stays on the server: only its id is sent,
+   * with the texts, the poster and the optional turntable clip. The token in the receipt is shown only once.
+   */
+  galleryPublish(s: GallerySubmission, signal?: AbortSignal): Promise<GalleryReceipt> {
+    return request<GalleryReceipt>('/api/gallery', { method: 'POST', body: galleryForm(s), signal })
+  },
+
   sketchfabExport: (req: SketchfabExportRequest) =>
     request<{ viewModelUrl: string }>('/api/model/export/sketchfab', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     }),
+}
+
+/** Limits checked by the API (characters, after it trims and removes control characters). */
+export const GALLERY_TITLE_MAX = 80
+export const GALLERY_DESCRIPTION_MAX = 1000
+export const GALLERY_PSEUDONYM_MAX = 40
+
+export function galleryForm(s: GallerySubmission): FormData {
+  const form = new FormData()
+  form.append('modelId', s.modelId)
+  form.append('title', s.title.trim())
+  form.append('description', s.description.trim())
+  form.append('pseudonym', s.pseudonym.trim())
+  const ext = s.poster.type === 'image/webp' ? 'webp' : s.poster.type === 'image/png' ? 'png' : 'jpg'
+  form.append('poster', s.poster, `poster.${ext}`)
+  if (s.clip) form.append('clip', s.clip, 'turntable.mp4')
+  return form
+}
+
+/**
+ * The publisher's private link to their model. The token is in the fragment, which browsers never send to a server,
+ * so it stays out of every log; the gallery page reads it to offer deletion.
+ */
+export function galleryOwnerLink(id: string, token: string, origin: string): string {
+  return `${origin}/gallery/${encodeURIComponent(id)}#token=${encodeURIComponent(token)}`
 }
 
 const SKETCHFAB_CLIENT_ID = 'SKa6zTHsHdgbs7RE7oug69QQq9TMDPv8gtqAZUuj'

@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   absoluteUrl,
+  api,
+  ApiError,
+  galleryForm,
+  galleryOwnerLink,
   GENERATION_STATS_PATH,
   API_BASE,
   bboxToPath,
@@ -288,5 +292,60 @@ describe('mesh detail and size estimate', () => {
 describe('generation stats', () => {
   it('asks for every generation in one request (largest API page)', () => {
     expect(GENERATION_STATS_PATH).toBe('/api/stats/generations?limit=10000')
+  })
+})
+
+describe('gallery', () => {
+  const submission = {
+    modelId: '0123456789abcdef0123456789abcdef',
+    title: '  Mont Blanc  ',
+    description: 'line 1\nline 2 ',
+    pseudonym: '',
+    poster: new Blob(['p'], { type: 'image/jpeg' }),
+    clip: new Blob(['c'], { type: 'video/mp4' }),
+  }
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('sends the model id, trimmed texts, the poster and the clip', () => {
+    const form = galleryForm(submission)
+    expect(form.get('modelId')).toBe(submission.modelId)
+    expect(form.get('title')).toBe('Mont Blanc')
+    expect(form.get('description')).toBe('line 1\nline 2')
+    expect(form.get('pseudonym')).toBe('')
+    expect((form.get('poster') as File).name).toBe('poster.jpg')
+    expect((form.get('clip') as File).name).toBe('turntable.mp4')
+    expect([...form.keys()]).toHaveLength(6)
+  })
+
+  it('leaves the clip out when there is none, and names a WebP poster', () => {
+    const form = galleryForm({ ...submission, clip: null, poster: new Blob(['p'], { type: 'image/webp' }) })
+    expect(form.has('clip')).toBe(false)
+    expect((form.get('poster') as File).name).toBe('poster.webp')
+  })
+
+  it('keeps the token in the fragment of the private link, never in the path or query', () => {
+    const link = new URL(galleryOwnerLink('abc123', 'tok_en-42', 'https://elevationapi.com'))
+    expect(link.pathname).toBe('/gallery/abc123')
+    expect(link.search).toBe('')
+    expect(link.hash).toBe('#token=tok_en-42')
+  })
+
+  it('posts to /api/gallery and shows the ProblemDetails detail of a refusal', async () => {
+    const fetch = vi.fn(async () =>
+      new Response(JSON.stringify({ title: 'Gone', status: 410, detail: 'The model is no longer on the server.' }), {
+        status: 410,
+        headers: { 'Content-Type': 'application/problem+json' },
+      }),
+    )
+    vi.stubGlobal('fetch', fetch)
+    const err = await api.galleryPublish(submission).catch((e) => e)
+    expect(err).toBeInstanceOf(ApiError)
+    expect(err.status).toBe(410)
+    expect(err.message).toBe('The model is no longer on the server.')
+    const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit]
+    expect(url).toBe(`${API_BASE}/api/gallery`)
+    expect(init.method).toBe('POST')
+    expect(init.body).toBeInstanceOf(FormData)
   })
 })

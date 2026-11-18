@@ -17,6 +17,7 @@
     "@microsoft/signalr": "^8.0.29",
     "chart.js": "^4.6.1",
     "maplibre-gl": "^6.16.0",
+    "mediabunny": "1.65.1",
     "simple-icons": "^16.36.0",
     "terra-draw": "^1.39.0",
     "terra-draw-maplibre-gl-adapter": "^1.5.0",

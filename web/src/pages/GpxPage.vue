@@ -227,6 +227,7 @@ function showModel() {
         v-if="showResult && gen.result.value"
         :result="gen.result.value"
         :publish="publishContext"
+        gpx
         @close="showResult = false"
       />
     </template>
