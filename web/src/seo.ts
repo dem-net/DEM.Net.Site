@@ -53,6 +53,11 @@ export const INDEXED_PAGES: PageSeo[] = [
     description: 'Map of every 3D model generated with Elevation API, with a day-by-day replay and the datasets used.',
   },
   {
+    path: '/gallery',
+    title: 'Gallery · Elevation API',
+    description: '3D terrain models made and shared by Elevation API users: turn them around, download them or generate them again.',
+  },
+  {
     path: '/expo',
     title: 'Expo · Elevation API',
     description: 'People and projects using Elevation API: 3D printing, games, research and more.',

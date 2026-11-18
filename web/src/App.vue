@@ -24,7 +24,8 @@ const tools: { to: string; label: string; isNew?: boolean }[] = [
 ]
 /** Header shows contact channels; the footer also lists Sketchfab. */
 const headerSocial = socialLinks.filter((l) => l.brand !== 'sketchfab')
-const pages = [
+const pages: { to: string; label: string; isNew?: boolean }[] = [
+  { to: '/gallery', label: 'Gallery', isNew: true },
   { to: '/expo', label: 'Expo' },
   { to: '/stats', label: 'Stats' },
   { to: '/faq', label: 'FAQ' },
@@ -43,12 +44,12 @@ const pages = [
           <span class="text-sm font-semibold tracking-tight">Elevation API</span>
         </RouterLink>
 
-        <div class="hidden flex-1 items-center gap-1 md:flex">
+        <div class="hidden flex-1 items-center gap-1 lg:flex">
           <RouterLink
             v-for="l in [...tools, ...pages]"
             :key="l.to"
             :to="l.to"
-            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-2 hover:bg-subtle hover:text-ink"
+            class="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm whitespace-nowrap text-ink-2 hover:bg-subtle hover:text-ink"
             active-class="!bg-accent-soft !text-accent font-medium"
           >
             {{ l.label }}
@@ -56,7 +57,7 @@ const pages = [
           </RouterLink>
         </div>
 
-        <div class="ml-auto hidden items-center gap-0.5 lg:flex">
+        <div class="ml-auto hidden items-center gap-0.5 xl:flex">
           <a
             v-for="l in headerSocial"
             :key="l.brand"
@@ -73,7 +74,7 @@ const pages = [
 
         <button
           type="button"
-          class="ml-auto rounded-md p-2 text-ink-2 hover:bg-subtle md:hidden"
+          class="ml-auto rounded-md p-2 text-ink-2 hover:bg-subtle lg:hidden"
           :aria-expanded="menuOpen"
           aria-controls="mobile-menu"
           aria-label="Menu"
@@ -84,7 +85,7 @@ const pages = [
         </button>
       </nav>
 
-      <div v-show="menuOpen" id="mobile-menu" class="border-t border-line px-4 py-3 md:hidden">
+      <div v-show="menuOpen" id="mobile-menu" class="border-t border-line px-4 py-3 lg:hidden">
         <p class="field-label">Tools</p>
         <RouterLink
           v-for="l in tools"
@@ -97,8 +98,9 @@ const pages = [
           <NewBadge v-if="l.isNew" />
         </RouterLink>
         <div class="my-2 border-t border-line" />
-        <RouterLink v-for="l in pages" :key="l.to" :to="l.to" class="block rounded-md px-2 py-2 text-ink-2">
+        <RouterLink v-for="l in pages" :key="l.to" :to="l.to" class="flex items-center gap-2 rounded-md px-2 py-2 text-ink-2">
           {{ l.label }}
+          <NewBadge v-if="l.isNew" />
         </RouterLink>
         <div class="mt-2 flex gap-1 border-t border-line pt-3">
           <a

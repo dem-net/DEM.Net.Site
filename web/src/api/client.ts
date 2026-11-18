@@ -5,6 +5,10 @@ import type {
   BBox,
   Dataset,
   ElevationResponse,
+  GalleryAdminSession,
+  GalleryItem,
+  GalleryKind,
+  GalleryPage,
   GalleryReceipt,
   GallerySubmission,
   Generation,
@@ -58,6 +62,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (!res.ok) throw await readError(res)
   return res.json() as Promise<T>
+}
+
+/** For calls whose answer has no body (202, 204). */
+async function send(path: string, init?: RequestInit): Promise<void> {
+  let res: Response
+  try {
+    res = await fetch(API_BASE + path, init)
+  } catch {
+    throw new ApiError(0, 'Cannot reach the Elevation API. Check your connection and try again.')
+  }
+  if (!res.ok) throw await readError(res)
 }
 
 function query(params: Record<string, string | number | boolean | null | undefined>): string {
@@ -398,6 +413,26 @@ export const api = {
     return request<GalleryReceipt>('/api/gallery', { method: 'POST', body: galleryForm(s), signal })
   },
 
+  /** Published models, newest first; pass the previous page's `next` as `cursor`. */
+  async galleryList(cursor: string | null, limit: number, signal?: AbortSignal): Promise<GalleryPage> {
+    const r = await request<GalleryPageResponse>(`/api/gallery?${query({ cursor, limit })}`, { signal })
+    return { items: (r.items ?? []).map(toGalleryItem), next: r.next ?? null }
+  },
+
+  /** One published model; null when it isn't published (unknown, waiting for review, rejected or deleted). */
+  async galleryItem(id: string, signal?: AbortSignal): Promise<GalleryItem | null> {
+    try {
+      return toGalleryItem(await request<GalleryItemResponse>(`/api/gallery/${encodeURIComponent(id)}`, { signal }))
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return null
+      throw e
+    }
+  },
+
+  /** Deletes a model with the token of the publisher's private link. A wrong token answers 404, like an unknown id. */
+  galleryDelete: (id: string, token: string) =>
+    send(`/api/gallery/${encodeURIComponent(id)}`, { method: 'DELETE', headers: { 'X-Gallery-Token': token } }),
+
   sketchfabExport: (req: SketchfabExportRequest) =>
     request<{ viewModelUrl: string }>('/api/model/export/sketchfab', {
       method: 'POST',
@@ -429,6 +464,126 @@ export function galleryForm(s: GallerySubmission): FormData {
  */
 export function galleryOwnerLink(id: string, token: string, origin: string): string {
   return `${origin}/gallery/${encodeURIComponent(id)}#token=${encodeURIComponent(token)}`
+}
+
+/** Gallery id: 32 lowercase hex characters (checked before calling the API with a route parameter). */
+export const GALLERY_ID = /^[0-9a-f]{32}$/
+
+export interface GalleryItemResponse {
+  id: string
+  status: string
+  title: string
+  description?: string | null
+  pseudonym?: string | null
+  place?: string | null
+  kind: string
+  dataset: string
+  imagery?: string | null
+  options?: Record<string, string> | null
+  /** [west, south, east, north] */
+  bbox?: number[] | null
+  attributions?: Attribution[] | null
+  modelBytes: number
+  createdAt: string
+  publishedAt?: string | null
+  posterUrl: string
+  clipUrl?: string | null
+  modelUrl: string
+}
+
+export interface GalleryPageResponse {
+  items?: GalleryItemResponse[] | null
+  next?: string | null
+}
+
+const GALLERY_KINDS: readonly GalleryKind[] = ['terrain', 'osm', 'gpx']
+
+export function toGalleryItem(r: GalleryItemResponse): GalleryItem {
+  const b = r.bbox
+  return {
+    id: r.id,
+    status: r.status,
+    title: r.title,
+    description: r.description || null,
+    pseudonym: r.pseudonym || null,
+    place: r.place || null,
+    kind: GALLERY_KINDS.includes(r.kind as GalleryKind) ? (r.kind as GalleryKind) : 'terrain',
+    dataset: r.dataset,
+    imagery: r.imagery || null,
+    options: r.options ?? {},
+    bbox: b && b.length === 4 && b.every(Number.isFinite) ? { west: b[0], south: b[1], east: b[2], north: b[3] } : null,
+    attributions: r.attributions ?? [],
+    modelBytes: r.modelBytes,
+    createdAt: r.createdAt,
+    publishedAt: r.publishedAt ?? null,
+    posterUrl: absoluteUrl(r.posterUrl)!,
+    clipUrl: absoluteUrl(r.clipUrl),
+    modelUrl: absoluteUrl(r.modelUrl)!,
+  }
+}
+
+/** Reads `#token=…` (publisher's private link) or `#login=…` (admin sign-in link) from a location hash. */
+export function hashParam(hash: string, name: 'token' | 'login'): string | null {
+  return new URLSearchParams(hash.replace(/^#/, '')).get(name) || null
+}
+
+export type GalleryFile = 'poster' | 'clip' | 'model'
+
+/**
+ * Moderation calls, signed in with a one-time link emailed to the admin address. The session stays in memory only
+ * (never in browser storage): reloading the page signs out.
+ */
+export const galleryAdmin = {
+  /** Answers the same whatever the address: only the configured admin address gets an email. */
+  requestLink: (email: string) =>
+    send('/api/gallery/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() }),
+    }),
+
+  /** Exchanges the token of a sign-in link (usable once) for a session. */
+  signIn: (token: string) =>
+    request<GalleryAdminSession>('/api/gallery/admin/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    }),
+
+  signOut: (session: string) => send('/api/gallery/admin/session', { method: 'DELETE', headers: bearer(session) }),
+
+  /** Waiting for review, oldest first. */
+  async pending(session: string, signal?: AbortSignal): Promise<GalleryItem[]> {
+    const rows = await request<GalleryItemResponse[]>('/api/gallery/admin/pending', { headers: bearer(session), signal })
+    return rows.map(toGalleryItem)
+  },
+
+  /** A pending model's file: fetched with the session, so it can't be a plain <img src>. */
+  async file(session: string, id: string, file: GalleryFile, signal?: AbortSignal): Promise<Blob> {
+    let res: Response
+    try {
+      res = await fetch(`${API_BASE}/api/gallery/admin/${encodeURIComponent(id)}/${file}`, { headers: bearer(session), signal })
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') throw e
+      throw new ApiError(0, 'Cannot reach the Elevation API. Check your connection and try again.')
+    }
+    if (!res.ok) throw await readError(res)
+    return res.blob()
+  },
+
+  approve: (session: string, id: string) =>
+    send(`/api/gallery/admin/${encodeURIComponent(id)}/approve`, { method: 'POST', headers: bearer(session) }),
+
+  reject: (session: string, id: string) =>
+    send(`/api/gallery/admin/${encodeURIComponent(id)}/reject`, { method: 'POST', headers: bearer(session) }),
+
+  /** Removes any model, published or not. */
+  remove: (session: string, id: string) =>
+    send(`/api/gallery/admin/${encodeURIComponent(id)}`, { method: 'DELETE', headers: bearer(session) }),
+}
+
+function bearer(session: string): HeadersInit {
+  return { Authorization: `Bearer ${session}` }
 }
 
 const SKETCHFAB_CLIENT_ID = 'SKa6zTHsHdgbs7RE7oug69QQq9TMDPv8gtqAZUuj'

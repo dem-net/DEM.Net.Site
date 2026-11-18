@@ -258,3 +258,43 @@ export interface GalleryReceipt {
   /** "pending" until the site owner approves the model. */
   status: string
 }
+
+export type GalleryKind = 'terrain' | 'osm' | 'gpx'
+
+/** A gallery model (GET /api/gallery). Texts come from anonymous visitors: always shown as text, never as HTML. */
+export interface GalleryItem {
+  id: string
+  /** pending, published or rejected */
+  status: string
+  title: string
+  description: string | null
+  pseudonym: string | null
+  /** "Place, Country"; null when unknown. */
+  place: string | null
+  kind: GalleryKind
+  dataset: string
+  imagery: string | null
+  /** Generation options, as in the statistics, to generate the same model again. */
+  options: Record<string, string>
+  bbox: BBox | null
+  attributions: Attribution[]
+  modelBytes: number
+  /** ISO dates */
+  createdAt: string
+  publishedAt: string | null
+  /** Absolute URLs (public items), or API paths for the admin/ equivalents. */
+  posterUrl: string
+  clipUrl: string | null
+  modelUrl: string
+}
+
+export interface GalleryPage {
+  items: GalleryItem[]
+  /** Cursor of the next page; null on the last one. */
+  next: string | null
+}
+
+export interface GalleryAdminSession {
+  session: string
+  expiresAt: string
+}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { ArrowRight, Layers, Mountain, Route, Spline } from '@lucide/vue'
+import { ArrowRight, Images, Layers, Mountain, Route, Spline } from '@lucide/vue'
 import NewBadge from '@/components/NewBadge.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 
@@ -70,6 +70,17 @@ const tools = [
           <p class="mt-1 text-sm text-ink-3">{{ t.text }}</p>
         </RouterLink>
       </div>
+      <RouterLink to="/gallery" class="card group mt-4 flex items-center gap-4 p-6 transition-colors hover:border-accent">
+        <Images class="size-6 shrink-0 text-accent" />
+        <div class="min-w-0">
+          <h2 class="flex items-center gap-1 font-semibold">
+            Gallery
+            <NewBadge class="ml-1" />
+            <ArrowRight class="size-4 opacity-0 transition-opacity group-hover:opacity-100" />
+          </h2>
+          <p class="mt-1 text-sm text-ink-3">See the models others made, and publish yours.</p>
+        </div>
+      </RouterLink>
       <SupportBlock class="mt-10" />
     </section>
   </div>
