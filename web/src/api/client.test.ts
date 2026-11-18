@@ -171,14 +171,14 @@ describe('model result', () => {
 
 describe('textures', () => {
   const bbox = { west: 6.82, east: 6.91, south: 45.8, north: 45.86 }
-  const topts: TextureOptions = { dataset: 'SRTM_GL3', imageryProvider: 'Esri.WorldImagery', textureQuality: 2 }
+  const topts: TextureOptions = { dataset: 'SRTM_GL3', imageryProvider: 'MapBox-SatelliteStreet', textureQuality: 2 }
 
   it('builds the textures path with the requested outputs', () => {
     const url = new URL(API_BASE + texturePath(bbox, topts, ['texture', 'heightmap'], 'conn1'))
     expect(url.pathname).toBe('/api/texture/bbox/6.82,6.91,45.8,45.86')
     expect(url.searchParams.get('outputs')).toBe('texture,heightmap')
     expect(url.searchParams.get('dataSet')).toBe('SRTM_GL3')
-    expect(url.searchParams.get('imageryProvider')).toBe('Esri.WorldImagery')
+    expect(url.searchParams.get('imageryProvider')).toBe('MapBox-SatelliteStreet')
     expect(url.searchParams.get('textureQuality')).toBe('2')
     expect(url.searchParams.get('clientConnectionId')).toBe('conn1')
     expect(url.searchParams.has('onlyEstimateSize')).toBe(false)

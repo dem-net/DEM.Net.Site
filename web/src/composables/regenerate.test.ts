@@ -36,7 +36,7 @@ describe('regenerateLink', () => {
   it('carries the terrain options, which the Map to 3D page reads back', () => {
     const link = regenerateLink(gen('terrain', 'STL', 'AW3D30'), {
       textured: 'True',
-      imageryProvider: 'Esri.WorldImagery',
+      imageryProvider: 'MapBox-SatelliteStreet',
       textureQuality: 'High',
       zFactor: '2.3',
       meshReduceFactor: '0.8',
@@ -47,7 +47,7 @@ describe('regenerateLink', () => {
     expect(optionsFromQuery(link.query)).toEqual({
       dataset: 'AW3D30',
       format: 'STL',
-      imageryProvider: 'Esri.WorldImagery',
+      imageryProvider: 'MapBox-SatelliteStreet',
       textureQuality: 3,
       zFactor: 2.5,
       meshDetail: 80,
@@ -82,9 +82,9 @@ describe('regenerateLink', () => {
   })
 
   it('opens the Textures page with its dataset, imagery and quality', () => {
-    expect(regenerateLink(gen('textures', 'texture,heightmap', 'FABDEM'), { imageryProvider: 'Esri.WorldImagery', textureQuality: '3' })).toEqual({
+    expect(regenerateLink(gen('textures', 'texture,heightmap', 'FABDEM'), { imageryProvider: 'MapBox-SatelliteStreet', textureQuality: '3' })).toEqual({
       path: '/textures',
-      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'FABDEM', imagery: 'Esri.WorldImagery', quality: '3' },
+      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'FABDEM', imagery: 'MapBox-SatelliteStreet', quality: '3' },
       areaOnly: false,
     })
     // The textures endpoint defaults to Medium
