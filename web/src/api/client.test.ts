@@ -28,6 +28,7 @@ const opts: ModelOptions = {
   meshQuality: 2,
   adornments: true,
   boxed: false,
+  boxMonuments: false,
 }
 
 describe('bbox', () => {
@@ -69,6 +70,7 @@ describe('terrainModelPath', () => {
       meshQuality: '2',
       adornments: 'true',
       boxed: 'false',
+      boxStyle: 'Solid',
       clientConnectionId: 'abc',
     })
   })
@@ -83,6 +85,14 @@ describe('terrainModelPath', () => {
     const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('boxed')
     expect(q({ ...opts, boxed: true })).toBe('true')
     expect(q({ ...opts, boxed: true, format: 'STL' })).toBe('false')
+  })
+
+  it('sends boxStyle=Monuments only for a boxed glTF with monuments on', () => {
+    const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('boxStyle')
+    expect(q({ ...opts, boxed: true, boxMonuments: true })).toBe('Monuments')
+    expect(q({ ...opts, boxed: false, boxMonuments: true })).toBe('Solid')
+    expect(q({ ...opts, boxed: true, boxMonuments: true, format: 'STL' })).toBe('Solid')
+    expect(q({ ...opts, boxed: true })).toBe('Solid')
   })
 
   it('switches to the OSM endpoint and maps OSM flags', () => {

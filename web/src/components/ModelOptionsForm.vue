@@ -126,6 +126,12 @@ const formats = computed(() => [
           label="Boxed model"
           hint="Close the terrain with walls and a bottom, like a block (STL models always are)"
         />
+        <ToggleSwitch
+          v-if="isGltf && options.boxed"
+          v-model="options.boxMonuments"
+          label="Monuments on the walls"
+          hint="Draw well-known monuments (Eiffel Tower, Burj Khalifa…) on the walls at the model's scale, as a height reference. Only those that fit and are large enough to read"
+        />
       </div>
     </div>
   </div>

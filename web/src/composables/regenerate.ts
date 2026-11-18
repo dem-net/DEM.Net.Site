@@ -54,6 +54,7 @@ export function modelOptionsFromApi(g: Generation, o: ApiOptions): ModelOptions 
     meshQuality: meshQuality(o.meshQuality, 2),
     adornments: bool(o.adornments, true),
     boxed: bool(o.boxed, false),
+    boxMonuments: o.boxStyle?.toLowerCase() === 'monuments',
   }
 }
 
