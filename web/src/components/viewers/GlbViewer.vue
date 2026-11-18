@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { Expand, Grid3x3, LoaderCircle, RotateCw, TriangleAlert } from '@lucide/vue'
+import { Expand, Grid3x3, LoaderCircle, RotateCw, TriangleAlert, Video } from '@lucide/vue'
+import type { TurntableResult, TurntableViewer } from './turntable'
 
 const props = defineProps<{ src: string; sizeMB: number; alt?: string }>()
 
@@ -55,6 +56,21 @@ async function applyWireframe() {
 }
 
 watch(wireframe, applyWireframe)
+
+/** Poster and turntable clip for the gallery, from the current view (see turntable.ts). */
+const capturing = ref(false)
+async function capture(onProgress?: (fraction: number) => void, signal?: AbortSignal): Promise<TurntableResult> {
+  if (!el.value || !loaded.value) throw new Error('Wait for the model to load, then capture it.')
+  capturing.value = true
+  try {
+    const { captureTurntable } = await import('./turntable')
+    return await captureTurntable(el.value as TurntableViewer, onProgress, signal)
+  } finally {
+    capturing.value = false
+  }
+}
+
+defineExpose({ capture, loaded })
 
 const pct = computed(() => Math.round(progress.value * 100))
 
@@ -111,7 +127,13 @@ function fullscreen() {
       <p v-if="failed" class="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-danger">
         The preview could not be loaded. You can still download the model.
       </p>
-      <div v-if="loaded" class="absolute right-2 bottom-2 flex gap-1">
+      <p
+        v-if="capturing"
+        class="pointer-events-none absolute top-2 left-2 inline-flex items-center gap-1.5 rounded-md bg-surface/80 px-2 py-1 text-xs text-ink-2 backdrop-blur"
+      >
+        <Video class="size-3.5 text-accent" /> Recording the turntable…
+      </p>
+      <div v-if="loaded && !capturing" class="absolute right-2 bottom-2 flex gap-1">
         <button
           type="button"
           class="rounded-md bg-surface/80 p-1.5 text-ink-2 backdrop-blur hover:text-ink"

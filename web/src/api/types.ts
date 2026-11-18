@@ -237,3 +237,24 @@ export interface GenerationDetail {
   /** Absolute model URL while the file is kept (never for GPX models); null otherwise. */
   modelUrl: string | null
 }
+
+/** A model submitted to the gallery (POST /api/gallery). Everything else comes from the generation, on the server. */
+export interface GallerySubmission {
+  /** Request id of the generated glTF model (`ModelResult.id`). */
+  modelId: string
+  title: string
+  description: string
+  pseudonym: string
+  /** WebP, JPEG or PNG; the API re-encodes it to WebP. */
+  poster: Blob
+  /** One turn of the model, MP4 (H.264); null when the browser can't encode video. */
+  clip: Blob | null
+}
+
+export interface GalleryReceipt {
+  id: string
+  /** Secret delete token, returned only once. */
+  token: string
+  /** "pending" until the site owner approves the model. */
+  status: string
+}

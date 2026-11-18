@@ -51,6 +51,7 @@ function contentSecurityPolicy(apiBase: string): Plugin {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
+    `media-src 'self' blob: ${api.origin}`, // gallery turntables: the preview of a capture (blob:) and published clips
     [
       "connect-src 'self' data: blob:",
       api.origin,
