@@ -5,7 +5,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import Markdown from 'unplugin-vue-markdown/vite'
-import { HEAD_BLOCK_RE, HOME_SEO, INDEXED_PAGES, headBlock, htmlFileFor, sitemapXml } from './src/seo'
+import { HEAD_BLOCK_RE, HOME_SEO, INDEXED_PAGES, MOVED_PAGES, headBlock, htmlFileFor, seoForPath, sitemapXml } from './src/seo'
 
 /**
  * GitHub Pages has no SPA rewrites. Each indexed page gets its own copy of index.html
@@ -29,6 +29,11 @@ function pageHtml(): Plugin {
       for (const page of INDEXED_PAGES) {
         if (page.path === '/') continue
         writeFileSync(resolve(outDir, htmlFileFor(page.path)), index.replace(HEAD_BLOCK_RE, headBlock(page)))
+      }
+      for (const moved of MOVED_PAGES) {
+        const target = seoForPath(moved.to.split('#')[0])
+        if (!target) throw new Error(`page-html: ${moved.path} moves to ${moved.to}, which is not an indexed page`)
+        writeFileSync(resolve(outDir, htmlFileFor(moved.path)), index.replace(HEAD_BLOCK_RE, headBlock(target)))
       }
       writeFileSync(resolve(outDir, '404.html'), index.replace(HEAD_BLOCK_RE, headBlock(undefined)))
       writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapXml())

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { routes } from './routes'
-import { HEAD_BLOCK_RE, INDEXED_PAGES, headBlock, htmlFileFor, seoForPath, sitemapXml } from './seo'
+import { HEAD_BLOCK_RE, INDEXED_PAGES, MOVED_PAGES, headBlock, htmlFileFor, seoForPath, sitemapXml } from './seo'
 
 describe('seo', () => {
   const router = createRouter({ history: createMemoryHistory(), routes })
@@ -26,7 +26,7 @@ describe('seo', () => {
   })
 
   it('finds a page with or without a trailing slash', () => {
-    expect(seoForPath('/faq/')?.path).toBe('/faq')
+    expect(seoForPath('/about/')?.path).toBe('/about')
     expect(seoForPath('/sketchfab_oauth2')).toBeUndefined()
   })
 
@@ -43,5 +43,14 @@ describe('seo', () => {
   it('lists every page in the sitemap', () => {
     const xml = sitemapXml()
     for (const page of INDEXED_PAGES) expect(xml).toContain(`<loc>https://elevationapi.com${page.path}</loc>`)
+  })
+
+  it('redirects moved pages to a section of an indexed page, and no longer indexes them', async () => {
+    for (const moved of MOVED_PAGES) {
+      await router.push(moved.path)
+      expect(router.currentRoute.value.fullPath, moved.path).toBe(moved.to)
+      expect(seoForPath(moved.to.split('#')[0]), moved.to).toBeDefined()
+      expect(seoForPath(moved.path), moved.path).toBeUndefined()
+    }
   })
 })

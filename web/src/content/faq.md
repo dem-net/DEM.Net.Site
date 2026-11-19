@@ -1,10 +1,10 @@
-## What are STL and GLTF/GLB file formats?
+### What are STL and GLTF/GLB file formats?
 
 - [STL](https://en.wikipedia.org/wiki/STL_(file_format)) is for 3D printing. It cannot be textured and does not support color in DEM Net.
 - [glTF](https://en.wikipedia.org/wiki/GlTF) is an open standard for 3D asset exchange. It supports Physical Base Rendering and is awesome.
 <br/>DEM Net uses binary-packed glTF files (.glb), where geometry and textures are encoded in a single file.
 
-## How can I see my model once downloaded ?
+### How can I see my model once downloaded ?
 
 | File format |    OS   | Viewers                                                       |
 |-------------|:-------:|---------------------------------------------------------------|
@@ -16,18 +16,18 @@
 > For STL models visualization I also like [Ultimaker Cura](https://ultimaker.com/software/ultimaker-cura), it is indeed recommended for 3D printing as well.
 
 
-## Do I need to give attribution to DEM Net Elevation API?
+### Do I need to give attribution to DEM Net Elevation API?
 
 - You MUST cite the data sources
     - Elevation data providers (OpenTopography or NOOA for ETOPO1)
     - Imagery providers
     - Data providers (OpenStreetMap)
 
-__You'll find in the [About page](/about#imagery), and in the "Credits" section shown with every generated model, all needed information to credit them. It's open and free data, that's awesome, give them all the credit they deserve.__
+__You'll find in the [Elevation datasets](/about#datasets) and [Imagery providers](/about#imagery) sections below, and in the "Credits" section shown with every generated model, all needed information to credit them. It's open and free data, that's awesome, give them all the credit they deserve.__
 
 - You MUST also cite "DEM Net Elevation API (elevationapi.com)" for all derived work. I have spent many (I mean, MANY) hours of my spare time building this and you should give me the credit for what I've built thanks to open data and [other people's work](https://github.com/dem-net/DEM.Net/blob/master/LICENSE%20-%20ThirdParty.md).
 
-## Are the models georeferenced, how can I integrate them?
+### Are the models georeferenced, how can I integrate them?
 
 - Models coordinates are projected to Web Mercator (3857). Units are in meters.
 
@@ -35,13 +35,13 @@ __You'll find in the [About page](/about#imagery), and in the "Credits" section 
 
 - The same images are available from the API: `/api/texture/bbox/{west},{east},{south},{north}?outputs=texture,normalmap,heightmap`. Model requests no longer return them.
 
-## How can I share my model?
+### How can I share my model?
 
 - The best way (for now) is to upload it to [SketchFab](https://sketchfab.com), where you can setup the camera and 3D post processing effects, and share your model. See [DEM Net Elevation API gallery](https://sketchfab.com/xfischer).
 
 - We plan to integrate SketchFab direct upload in future releases.
 
-## Can I run _simple_ elevation data requests?
+### Can I run _simple_ elevation data requests?
 
 - Yes! This site is a user facing playground to use the advanced 3D features of the API, but there are basic elevation APIs here : [api.elevationapi.com](https://api.elevationapi.com)
 
@@ -49,7 +49,7 @@ __You'll find in the [About page](/about#imagery), and in the "Credits" section 
 <br/>
 > [https://api.elevationapi.com/api/Elevation?lat=48.854624&lon=2.3436793&dataSet=SRTM_GL3](https://api.elevationapi.com/api/Elevation?lat=48.854624&lon=2.3436793&dataSet=SRTM_GL3)
 
-## Is it really free?
+### Is it really free?
 
 - No. It is free for personal use, or for small business companies (<100K$ gross revenue).
 
@@ -57,7 +57,7 @@ __You'll find in the [About page](/about#imagery), and in the "Credits" section 
 
 __This site's back-end has a running cost of 100€ / month__. Please consider [supporting the project](/about#support) via GitHub Sponsors, Patreon or a PayPal donation.
 
-## Can I use high-resolution Swiss data?
+### Can I use high-resolution Swiss data?
 
 Yes. For areas in Switzerland and Liechtenstein, the API offers [swisstopo](https://www.swisstopo.admin.ch) open data:
 
@@ -68,7 +68,7 @@ Choose them in the elevation data and imagery lists. They cover only Switzerland
 
 Credit them as "© swisstopo" (see swisstopo's [terms of use for open geodata](https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html)).
 
-## Is there limits in API usage?
+### Is there limits in API usage?
 
 Yes, there's a rate limit on API endpoints to encourage respectful usage and resource sharing among all users.
 
@@ -76,7 +76,7 @@ Yes, there's a rate limit on API endpoints to encourage respectful usage and res
 - Line elevation: 1 call per second.
 - Other endpoints: 3 calls per second.
 
-## Will other datasets be added in the future?
+### Will other datasets be added in the future?
 
 Yes! We plan to add other global datasets:
 
@@ -84,7 +84,7 @@ Yes! We plan to add other global datasets:
 - EU-DEM for Europe elevations at higher latitudes
 - MapBox Elevation Tiles
 
-## What are the forthcoming features?
+### What are the forthcoming features?
 
 - Better 3D visualization
 - Ambient occlusion textures
@@ -94,12 +94,12 @@ Yes! We plan to add other global datasets:
 - Compression (Draco / Universal Basis)
 - ...
 
-## Can I use this in my own software?
+### Can I use this in my own software?
 
 - OK for individuals or small businesses (< 100 K$ gross revenue)
 - 100K+ gross revenue companies, please contact us.
 
-## Where the elevation data comes from and what is the coverage area?
+### Where the elevation data comes from and what is the coverage area?
 
 DEM Net uses publicly available DEMs from [OpenTopography](https://opentopography.org/), [NOOA](https://www.ngdc.noaa.gov/mgg/global) and [NASA](https://earthdata.nasa.gov/)
 
@@ -114,10 +114,10 @@ DEM Net uses publicly available DEMs from [OpenTopography](https://opentopograph
 
 * **NASADEM** dataset coverage is within approx. 60 deg. of N/S latitudes. Resolution: 30m.<br/>*This dataset has is the most accurate for mountains.*
 
-## Can I use another imagery service ?
+### Can I use another imagery service ?
 
 It is possible if the provider is a tile ZXY provider (no WMS), is public (ie: public facing URL), and if it can be freely usable. Please contact us via contact@elevationapi.com.
 
-## How is this working?
+### How is this working?
 
 Coming soon...

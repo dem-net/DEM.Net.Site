@@ -122,3 +122,4 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Each page in `INDEXED_PAGES` gets its own copy of `index.html` (`/terrain` → `terrain.html`) with its title, description, canonical and Open Graph tags, so GitHub Pages answers HTTP 200. Google drops pages served with a 404 status, whatever they render.
   - Every other path boots the app through `404.html` (marked `noindex`). The build also writes `sitemap.xml`; `public/robots.txt` points to it.
   - The router sets the same head tags on client-side navigation. Add new public pages to `INDEXED_PAGES` (a test checks each entry is a real route; the route table is in `src/routes.ts`).
+  - A page merged into another goes in `MOVED_PAGES` (`/faq` → `/about#faq`, `/expo` → `/about#expo`): the router redirects it, and the build still writes its HTML file with the target's tags, so old links get a 200 and a canonical to the target.

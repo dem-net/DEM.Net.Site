@@ -43,7 +43,7 @@ const tools = [
         </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <RouterLink to="/terrain" class="btn btn-primary px-5 py-2.5">Start on the map <ArrowRight class="size-4" /></RouterLink>
-          <RouterLink to="/faq" class="btn btn-secondary px-5 py-2.5">Use the API</RouterLink>
+          <RouterLink to="/about#faq" class="btn btn-secondary px-5 py-2.5">Use the API</RouterLink>
         </div>
       </div>
       <div class="aspect-video overflow-hidden rounded-2xl bg-subtle shadow-lg">
