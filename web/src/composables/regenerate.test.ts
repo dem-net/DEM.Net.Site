@@ -26,6 +26,7 @@ describe('regenerateLink', () => {
       adornments: true,
       boxed: false,
       boxMonuments: false,
+      trueScale: true,
     })
     expect(regenerateLink(gen('terrain'), {})).toEqual({
       path: '/terrain',
@@ -45,6 +46,7 @@ describe('regenerateLink', () => {
       adornments: 'false',
       boxed: 'True',
       boxStyle: 'Monuments',
+      trueScale: 'False',
     })!
     expect(optionsFromQuery(link.query)).toEqual({
       dataset: 'AW3D30',
@@ -57,6 +59,7 @@ describe('regenerateLink', () => {
       adornments: false,
       boxed: true,
       boxMonuments: true,
+      trueScale: false,
     })
   })
 

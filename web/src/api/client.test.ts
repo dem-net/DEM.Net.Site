@@ -33,6 +33,7 @@ const opts: ModelOptions = {
   adornments: true,
   boxed: false,
   boxMonuments: false,
+  trueScale: true,
 }
 
 describe('bbox', () => {
@@ -75,8 +76,16 @@ describe('terrainModelPath', () => {
       adornments: 'true',
       boxed: 'false',
       boxStyle: 'Solid',
+      trueScale: 'true',
       clientConnectionId: 'abc',
     })
+  })
+
+  it('sends trueScale=false when true proportions are turned off, for glTF and STL', () => {
+    const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('trueScale')
+    expect(q(opts)).toBe('true')
+    expect(q({ ...opts, trueScale: false })).toBe('false')
+    expect(q({ ...opts, trueScale: false, format: 'STL' })).toBe('false')
   })
 
   it('sends adornments=false when turned off, and never for STL', () => {

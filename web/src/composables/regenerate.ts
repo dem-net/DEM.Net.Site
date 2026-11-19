@@ -55,6 +55,7 @@ export function modelOptionsFromApi(g: Generation, o: ApiOptions): ModelOptions 
     adornments: bool(o.adornments, true),
     boxed: bool(o.boxed, false),
     boxMonuments: o.boxStyle?.toLowerCase() === 'monuments',
+    trueScale: bool(o.trueScale, true),
   }
 }
 
