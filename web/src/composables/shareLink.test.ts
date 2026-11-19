@@ -49,9 +49,10 @@ describe('model options query', () => {
       adornments: false,
       boxed: true,
       boxMonuments: true,
+      trueScale: false,
     }
     const q = optionsToQuery(o)
-    expect(q).toEqual({ dataset: 'swissALTI3D', format: 'stl', texture: '0', imagery: 'SwissImage', quality: '3', z: '2.5', detail: '30', resolution: 'best', adornments: '0', boxed: '1', monuments: '1' })
+    expect(q).toEqual({ dataset: 'swissALTI3D', format: 'stl', texture: '0', imagery: 'SwissImage', quality: '3', z: '2.5', detail: '30', resolution: 'best', adornments: '0', boxed: '1', monuments: '1', truescale: '0' })
     expect(optionsFromQuery(q)).toEqual(o)
   })
 

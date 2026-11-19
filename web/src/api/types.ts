@@ -89,6 +89,8 @@ export interface ModelOptions {
   boxed: boolean
   /** Monument silhouettes on the box walls at the model's scale, as a height reference (boxed glTF only). */
   boxMonuments: boolean
+  /** True proportions: X and Y at true metres at the model center instead of Web Mercator (the API's default is true). */
+  trueScale: boolean
 }
 
 /** Server-side size estimate (`onlyEstimateSize=true`). Approximate: actual files can differ by 2–3×. */

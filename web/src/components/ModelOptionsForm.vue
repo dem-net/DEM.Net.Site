@@ -132,6 +132,11 @@ const formats = computed(() => [
           label="Monuments on the walls"
           hint="Draw well-known monuments (Eiffel Tower, Burj Khalifa…) on the walls at the model's scale, as a height reference. Only those that fit and are large enough to read"
         />
+        <ToggleSwitch
+          v-model="options.trueScale"
+          label="True proportions"
+          hint="Keep the real ratio between heights and distances. Off: Web Mercator proportions, where the relief looks flatter away from the equator (×1.3 at 40°)"
+        />
       </div>
     </div>
   </div>
