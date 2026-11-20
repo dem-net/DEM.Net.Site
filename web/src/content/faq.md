@@ -55,7 +55,7 @@ __You'll find in the [Elevation datasets](/about#datasets) and [Imagery provider
 
 - __**We do not allow**__ > 100K$ gross revenue companies to use our API without prior notice and approval from contact@elevationapi.com.
 
-__This site's back-end has a running cost of 100€ / month__. Please consider [supporting the project](/about#support) via GitHub Sponsors, Patreon or a PayPal donation.
+__This site's back-end has a running cost of 100€ / month__. Please consider [supporting the project](/about#support) via GitHub Sponsors, Patreon, Buy Me a Coffee or a PayPal donation.
 
 ### Can I use high-resolution Swiss data?
 

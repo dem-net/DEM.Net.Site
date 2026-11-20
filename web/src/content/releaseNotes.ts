@@ -17,6 +17,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Website',
         items: [
+          'You can now support the project with Buy Me a Coffee.',
           'The FAQ and Expo are now sections of the About page, to make room in the menu.',
           'New Gallery: publish a glTF model with a poster and a turntable made in your browser, browse the models others shared, download them or generate them again. Every model is reviewed before it appears.',
           'Map to 3D: OpenStreetMap buildings and roads are back, each with its own switch. Ski pistes are not available for now.',

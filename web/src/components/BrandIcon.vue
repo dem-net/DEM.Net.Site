@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { siBluesky, siDiscord, siGithub, siGithubsponsors, siPatreon, siPaypal, siSketchfab } from 'simple-icons'
+import { siBluesky, siBuymeacoffee, siDiscord, siGithub, siGithubsponsors, siPatreon, siPaypal, siSketchfab } from 'simple-icons'
 import type { Brand } from '@/content/links'
 
 /** Brand logos (Simple Icons, CC0) drawn in currentColor; LinkedIn is hand-drawn since Simple Icons dropped it. */
@@ -14,6 +14,7 @@ const paths: Record<Exclude<Brand, 'linkedin'>, string> = {
   githubSponsors: siGithubsponsors.path,
   patreon: siPatreon.path,
   paypal: siPaypal.path,
+  buyMeACoffee: siBuymeacoffee.path,
 }
 
 const path = computed(() => (props.brand === 'linkedin' ? null : paths[props.brand]))
