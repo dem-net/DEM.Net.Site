@@ -21,7 +21,7 @@
 - You MUST cite the data sources
     - Elevation data providers (OpenTopography or NOOA for ETOPO1)
     - Imagery providers
-    - Data providers (OpenStreetMap)
+    - Data providers (OpenStreetMap, and Overture Maps for buildings)
 
 __You'll find in the [Elevation datasets](/about#datasets) and [Imagery providers](/about#imagery) sections below, and in the "Credits" section shown with every generated model, all needed information to credit them. It's open and free data, that's awesome, give them all the credit they deserve.__
 
