@@ -1,6 +1,6 @@
 /** Every external link used by the header, footer, About and Home: edit them here only. */
 
-export type Brand = 'github' | 'discord' | 'bluesky' | 'linkedin' | 'sketchfab' | 'githubSponsors' | 'patreon' | 'paypal'
+export type Brand = 'github' | 'discord' | 'bluesky' | 'linkedin' | 'sketchfab' | 'githubSponsors' | 'patreon' | 'paypal' | 'buyMeACoffee'
 
 export interface ExternalLink {
   brand: Brand
@@ -29,4 +29,5 @@ export const sponsorLinks: ExternalLink[] = [
     detail: 'One-time donation',
     url: 'https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=8F428QPSP9W5E&source=url',
   },
+  { brand: 'buyMeACoffee', label: 'Buy Me a Coffee', detail: 'One-time or monthly', url: 'https://www.buymeacoffee.com/elevationapi' },
 ]
