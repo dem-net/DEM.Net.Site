@@ -81,8 +81,14 @@ function addExtraLayers(m: MlMap) {
   )
 }
 
+/** The vector style's own layers (and whether each is shown in the Streets basemap), captured before
+ *  any layer is added: in Topo they are all hidden, so MapLibre doesn't fetch the vector tiles under
+ *  the raster (it skips sources with no visible layer) and the topo map doesn't get a second set of labels. */
+let styleLayers: { id: string; visible: boolean }[] = []
+
 function applyBasemap(m: MlMap, b: Basemap) {
   m.setLayoutProperty(TOPO, 'visibility', b === 'topo' ? 'visible' : 'none')
+  for (const l of styleLayers) m.setLayoutProperty(l.id, 'visibility', b === 'streets' && l.visible ? 'visible' : 'none')
   m.setLayoutProperty('hillshade', 'visibility', b === 'streets' ? 'visible' : 'none')
 }
 
@@ -103,9 +109,13 @@ onMounted(() => {
   m.addControl(new NavigationControl({ visualizePitch: true }), 'bottom-right')
   m.addControl(new GeolocateControl({ fitBoundsOptions: { maxZoom: 12 } }), 'bottom-right')
   m.addControl(new ScaleControl({ unit: 'metric' }), 'bottom-left')
-  m.once('load', () => {
+  // style.load fires before the first tiles are requested, so the hidden basemap is never downloaded.
+  m.once('style.load', () => {
+    styleLayers = m.getStyle().layers.map((l) => ({ id: l.id, visible: l.layout?.visibility !== 'none' }))
     addExtraLayers(m)
     applyBasemap(m, basemap.value)
+  })
+  m.once('load', () => {
     if (props.initial.relief) {
       // Applied directly so the shared pitch is kept (the toggle's watcher would tilt to 60°).
       m.setTerrain(TERRAIN)
