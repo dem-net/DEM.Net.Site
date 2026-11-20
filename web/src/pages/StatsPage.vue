@@ -652,8 +652,7 @@ async function focus(i: number) {
         </div>
       </div>
 
-      <!-- Streets by default: the topo relief competes with the colored footprints -->
-      <BaseMap :center="[10, 30]" :zoom="1.4" :initial="{ basemap: 'streets' }" @ready="onReady" />
+      <BaseMap :center="[10, 30]" :zoom="1.4" @ready="onReady" />
 
       <!-- Replay: plays the history day by day (map and numbers) -->
       <!-- px-14 keeps it clear of the scale bar and the zoom buttons on narrow screens -->

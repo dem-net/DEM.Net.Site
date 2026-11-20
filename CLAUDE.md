@@ -50,7 +50,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Generation calls pass `clientConnectionId` (from `ensureConnected()`) so the server knows where to push progress. `useGenerate()` (`src/composables/useGenerate.ts`) wraps this with busy, error, cancel and result state.
 - **Shared catalog** (`src/composables/useCatalog.ts`): the dataset and imagery lists are fetched once per session as module-level refs. There is no Vuex or Pinia.
 - **Map** (`src/components/map/`):
-  - `BaseMap.vue` creates the MapLibre map: OpenFreeMap vector style, plus an OpenTopoMap raster layer and AWS Terrarium hillshade/3D terrain, both added once and switched by toggling visibility.
+  - `BaseMap.vue` creates the MapLibre map: OpenFreeMap vector style, plus an OpenTopoMap raster layer and AWS Terrarium hillshade/3D terrain, both added once and switched by toggling visibility. In Topo, every layer of the vector style is hidden too, so its tiles aren't fetched under the raster.
     - Never call `setStyle()`: it would wipe the drawing layers.
   - `BaseMap.vue` emits `ready(map)` for pages and also provides the map to slot children through `useMap()`.
   - `setWorkerUrl()` with a `?url` import of `maplibre-gl-worker.mjs` is required. Without it, MapLibre 6's worker fails to load under Vite.
@@ -73,7 +73,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - "View 3D" opens `GlbViewer`/`StlViewer` over the map on the same page.
     - The panel has two tabs: Overview (totals, datasets) and Latest (the 100 latest generations, newest first, grouped by day, following the replay day). The API lists generations oldest first by creation time and only sends the day, so the list order is the time order. Clicking a row zooms to its area and opens its popup.
     - Colors: the 7 most used datasets take the fixed categorical order (`SERIES_COLORS`, CVD-validated on adjacent pairs), the rest share `OTHER_COLOR`. Colors are assigned once per load, so hiding a dataset never repaints the others.
-    - The page defaults to the Streets basemap. MapLibre popups live outside the component, so their theme styles are in an unscoped, `.stats-popup`-namespaced `<style>`.
+    - The page uses the same basemap default as the others (Topo, or the saved choice). MapLibre popups live outside the component, so their theme styles are in an unscoped, `.stats-popup`-namespaced `<style>`.
     - What's published is disclosed on `/privacy#statistics`. Update it if the published fields change.
   - `TexturesPage` (`/textures`) has one Generate button per image plus "Generate all (.zip)". Only one job runs at a time (the server throttle). Results are dropped when the area or options change. The Map to 3D result links to it with the same `?bbox=`.
   - Shared pieces: `AreaStep.vue` (step 1 of the bbox tools), `ImageryFields.vue` (imagery + quality).
