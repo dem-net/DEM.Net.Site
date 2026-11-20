@@ -139,7 +139,7 @@ function showModel() {
           <div v-if="withOsm" class="mt-3 space-y-3 border-t border-line pt-3">
             <ToggleSwitch v-model="osm.osmBuildings" label="Buildings" />
             <template v-if="osm.osmBuildings">
-              <ToggleSwitch v-model="osm.useOsmBuildingsColor" label="Use OSM building colours" hint="When mapped" />
+              <ToggleSwitch v-model="osm.useOsmBuildingsColor" label="Use mapped building colours" hint="When mapped" />
               <label v-if="!osm.useOsmBuildingsColor" class="flex items-center justify-between text-sm">
                 <span class="font-medium">Building colour</span>
                 <input v-model="osm.buildingsColor" type="color" class="h-8 w-12 cursor-pointer rounded border border-line bg-transparent" />

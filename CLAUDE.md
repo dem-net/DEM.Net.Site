@@ -61,6 +61,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - Tool pages use `ToolLayout` (a side panel with a sticky footer for the primary action, and the map).
   - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
     - OSM layers offered: buildings and roads (`withHighways`). Ski pistes are hidden: the API reads OSM from a Protomaps PMTiles archive, which has no pistes, and refuses `withSkiPistes=true` (HTTP 400).
+    - Buildings come from a second archive when the server has it: Overture Maps buildings (`OsmElevationOptions.BuildingsPMTilesFilePath`), which keeps heights, floors, roof shapes and facade/roof colours. The model credits then include Overture.
     - The OSM estimate can come back `success:false` with a `message` (extent needs too many PMTiles tiles); `SizeGauge` shows that message.
   - `StatsPage` (`/stats`) maps every successful generation from `GET /api/stats/generations` (compact rows read by `toGenerationStats()`; the backend stores them in PostgreSQL/PostGIS, cached for a minute). Footprints are exact, not snapped: that was a deliberate choice.
     - Each dataset has its own sources and layers (footprint fill + outline, plus centre points that fade out by zoom 10), toggled from the panel. Aggregation, colors and GeoJSON are in `src/composables/generationStats.ts`.
