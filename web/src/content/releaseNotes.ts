@@ -17,7 +17,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Website',
         items: [
-          'Map to 3D: many more buildings get their real height (in the Alps, about a third instead of 1 %), and "Use mapped building colours" now finds facade and roof colours where they are mapped.',
+          'Map to 3D: many more buildings have a height (in the Alps, about a third instead of 1 %), mostly estimated by machine learning where OpenStreetMap has none, and "Use mapped building colours" now finds facade and roof colours where they are mapped.',
           'New 3D preview: sky lighting, a sun with real shadows and ambient occlusion, so the relief reads much better. The Lighting button adjusts the sun, sky, exposure, shadows and ambient occlusion.',
           'Gallery: the poster and turntable use the lighting you chose, and the gallery shows your model with it.',
           'You can now support the project with Buy Me a Coffee.',
@@ -35,7 +35,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Elevation API',
         items: [
-          'Buildings now come from the Overture Maps buildings archive (OpenStreetMap plus other open sources): heights, floor counts and colours that the previous archive dropped. Roads and water still come from Protomaps.',
+          'Buildings now come from the Overture Maps buildings archive (OpenStreetMap plus other open sources): floor counts and colours that the previous archive dropped, and Microsoft machine-learning height estimates where OpenStreetMap has no height. Roads and water still come from Protomaps.',
           'Gallery submissions can include the 3D preview lighting (viewer), returned with the item.',
           'Gallery endpoints (api/gallery): anonymous submissions with a private delete link, review by the owner, paged listing of the published models.',
           'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
