@@ -9,7 +9,7 @@ import {
   galleryOwnerLink,
 } from '@/api/client'
 import type { PublishContext } from '@/api/types'
-import type { TurntableResult } from './viewers/turntable'
+import type { ViewCapture } from './viewers/turntable'
 import { placeNameAt } from '@/composables/region'
 import { coordinatesLabel } from '@/composables/sketchfabPrefill'
 
@@ -24,12 +24,12 @@ const props = defineProps<{
   publish?: PublishContext | null
   /** GPX models show the track: say so before it becomes public. */
   gpx?: boolean
-  /** The model viewer's capture (GlbViewer.capture). */
-  capture: (onProgress: (fraction: number) => void, signal: AbortSignal) => Promise<TurntableResult>
+  /** The model viewer's capture (TerrainViewer.capture). */
+  capture: (onProgress: (fraction: number) => void, signal: AbortSignal) => Promise<ViewCapture>
 }>()
 const emit = defineEmits<{ close: [] }>()
 
-interface Shot extends TurntableResult {
+interface Shot extends ViewCapture {
   posterUrl: string
   clipUrl: string | null
 }
@@ -103,7 +103,7 @@ async function send() {
   error.value = null
   try {
     const receipt = await api.galleryPublish(
-      { modelId: props.modelId, ...form, poster: shot.value.poster, clip: shot.value.clip },
+      { modelId: props.modelId, ...form, poster: shot.value.poster, clip: shot.value.clip, viewer: shot.value.viewer },
       job.signal,
     )
     link.value = galleryOwnerLink(receipt.id, receipt.token, window.location.origin)
@@ -230,7 +230,7 @@ function selectAll(e: FocusEvent) {
       <div class="space-y-1 rounded-lg bg-subtle px-3 py-2 text-xs text-ink-2">
         <p>
           Once approved, everyone can see and download the model, the poster, the turntable, your texts, the area, the dataset and
-          the options it was made with.
+          the options it was made with. The gallery shows it with the lighting you captured.
         </p>
         <p v-if="gpx" class="font-medium text-ink">Your GPX track is part of the model: it will be public too.</p>
         <p>

@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { Box, Check, LoaderCircle, MapPinned, Play, Trash2, X } from '@lucide/vue'
 import { galleryAdmin, type GalleryFile } from '@/api/client'
 import type { GalleryItem } from '@/api/types'
-import GlbViewer from '@/components/viewers/GlbViewer.vue'
+import TerrainViewer from '@/components/viewers/TerrainViewer.vue'
 import { GALLERY_KIND_LABELS, formatGalleryDate, galleryRegenerateLink, useGalleryAdmin } from '@/composables/gallery'
 import { formatBytes } from '@/composables/generationStats'
 
@@ -70,7 +70,13 @@ async function act(action: 'approve' | 'reject' | 'delete') {
   <article class="card overflow-hidden">
     <div class="grid gap-4 p-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <div class="space-y-2">
-        <GlbViewer v-if="urls.model" :src="urls.model" :size-m-b="item.modelBytes / 1e6" :alt="item.title" />
+        <TerrainViewer
+          v-if="urls.model"
+          :src="urls.model"
+          :size-m-b="item.modelBytes / 1e6"
+          :alt="item.title"
+          :settings="item.viewer"
+        />
         <video
           v-else-if="urls.clip"
           :src="urls.clip"

@@ -12,7 +12,6 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@google/model-viewer": "^4.4.0",
     "@lucide/vue": "^1.72.0",
     "@microsoft/signalr": "^8.0.29",
     "chart.js": "^4.6.1",

@@ -51,8 +51,7 @@ function contentSecurityPolicy(apiBase: string): Plugin {
   const apiWs = `${api.protocol === 'https:' ? 'wss:' : 'ws:'}//${api.host}`
   const csp = [
     "default-src 'self'",
-    // wasm-unsafe-eval: model-viewer's optional Draco/Basis decoders (WebAssembly, no JS eval)
-    "script-src 'self' 'wasm-unsafe-eval' https://m.elevationapi.com", // analytics script.js
+    "script-src 'self' https://m.elevationapi.com", // analytics script.js
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https:",
@@ -65,7 +64,6 @@ function contentSecurityPolicy(apiBase: string): Plugin {
       'https://tiles.openfreemap.org', // vector style, tiles, sprites, glyphs
       'https://tile.opentopomap.org',
       'https://s3.amazonaws.com', // Terrarium elevation tiles
-      'https://www.gstatic.com', // model-viewer Draco/Basis decoders
       'https://m.elevationapi.com', // analytics beacons (sendBeacon)
     ].join(' '),
     "worker-src 'self' blob:",
@@ -85,14 +83,7 @@ function contentSecurityPolicy(apiBase: string): Plugin {
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    vue({
-      include: [/\.vue$/, /\.md$/],
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag === 'model-viewer',
-        },
-      },
-    }),
+    vue({ include: [/\.vue$/, /\.md$/] }),
     Markdown({
       markdownItOptions: { linkify: true, typographer: true },
       wrapperClasses: 'prose',

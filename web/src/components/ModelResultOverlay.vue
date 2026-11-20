@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, type RouteLocationRaw } from 'vue-router'
 import { Download, ExternalLink, Images, Layers, Map as MapIcon } from '@lucide/vue'
 import { safeUrl } from '@/api/client'
@@ -7,10 +7,8 @@ import type { ModelResult, PublishContext } from '@/api/types'
 import sketchfabLogo from '@/assets/sketchfablogo.png'
 import GalleryPublishPanel from './GalleryPublishPanel.vue'
 import SketchfabPublishDialog from './SketchfabPublishDialog.vue'
-import GlbViewer from './viewers/GlbViewer.vue'
-import type { TurntableResult } from './viewers/turntable'
-
-const StlViewer = defineAsyncComponent(() => import('./viewers/StlViewer.vue'))
+import TerrainViewer from './viewers/TerrainViewer.vue'
+import type { ViewCapture } from './viewers/turntable'
 
 const props = defineProps<{
   result: ModelResult
@@ -34,7 +32,7 @@ const canPublish = computed(() => props.result.format === 'glTF')
 
 const publishDialog = ref<InstanceType<typeof SketchfabPublishDialog>>()
 
-const viewer = ref<InstanceType<typeof GlbViewer>>()
+const viewer = ref<InstanceType<typeof TerrainViewer>>()
 const galleryOpen = ref(false)
 const galleryPanel = ref<InstanceType<typeof GalleryPublishPanel>>()
 watch(() => props.result.id, () => (galleryOpen.value = false))
@@ -45,7 +43,7 @@ async function openGallery() {
   galleryPanel.value?.$el?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' })
 }
 
-function captureView(onProgress: (fraction: number) => void, signal: AbortSignal): Promise<TurntableResult> {
+function captureView(onProgress: (fraction: number) => void, signal: AbortSignal): Promise<ViewCapture> {
   if (!viewer.value) return Promise.reject(new Error('Open the 3D preview first.'))
   return viewer.value.capture(onProgress, signal)
 }
@@ -67,8 +65,12 @@ const elevationRange = computed(
         </button>
       </div>
 
-      <StlViewer v-if="result.format === 'STL'" :src="result.modelUrl" />
-      <GlbViewer v-else ref="viewer" :src="result.modelUrl" :size-m-b="result.sizeMB" />
+      <TerrainViewer
+        ref="viewer"
+        :src="result.modelUrl"
+        :format="result.format === 'STL' ? 'STL' : 'GLB'"
+        :size-m-b="result.sizeMB"
+      />
 
       <div class="mt-4 flex flex-wrap gap-2">
         <a

@@ -1,3 +1,5 @@
+import type { ViewerSettings } from './viewerSettings'
+
 export interface Attribution {
   subject: string
   text: string
@@ -251,6 +253,8 @@ export interface GallerySubmission {
   poster: Blob
   /** One turn of the model, MP4 (H.264); null when the browser can't encode video. */
   clip: Blob | null
+  /** Lighting of the 3D preview when it was captured; the gallery shows the model with it. */
+  viewer: ViewerSettings | null
 }
 
 export interface GalleryReceipt {
@@ -288,6 +292,8 @@ export interface GalleryItem {
   posterUrl: string
   clipUrl: string | null
   modelUrl: string
+  /** The publisher's 3D preview lighting; null when none was saved (the viewer's defaults). */
+  viewer: ViewerSettings | null
 }
 
 export interface GalleryPage {

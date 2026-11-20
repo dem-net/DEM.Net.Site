@@ -63,7 +63,7 @@ const optedOut = document.cookie.split('; ').includes('analytics_optout=1')
       <h2 class="text-xl font-semibold">Gallery</h2>
       <p class="mt-3 text-ink-2">
         When you publish a model to the gallery, the Elevation API keeps the model, the poster image and the turntable clip made in
-        your browser, the title, description and name or pseudonym you type, and the model's area, dataset, options, place name and
+        your browser with the lighting settings of the 3D preview, the title, description and name or pseudonym you type, and the model's area, dataset, options, place name and
         credits. Nothing is shown before the site owner approves it; after that everyone can see and download it. A model made from
         a GPX file shows the track. No account, email address or IP address is stored with it: your IP address is only held in
         memory for an hour, to limit the number of submissions. You get a private link when you publish: it deletes the model at any
