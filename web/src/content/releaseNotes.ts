@@ -36,6 +36,7 @@ export const releaseNotes: ReleaseNotes[] = [
           'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
           'The OSM model size estimate counts buildings and roads (onlyEstimateSize=true), and "Features only" models (withTerrain=false) work again.',
           'Much faster OpenStreetMap models with Mapterhorn (a dense city went from minutes to seconds), and roads sit 50 cm above the terrain so they no longer flicker through it.',
+          'GPX to 3D: the 3D track now follows the relief between the points of your GPX file, instead of cutting through slopes and ridges when they are far apart.',
         ],
       },
       {
