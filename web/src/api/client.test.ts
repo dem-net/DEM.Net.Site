@@ -18,6 +18,7 @@ import {
   toQualityEstimates,
   toTextureResult,
 } from './client'
+import { DEFAULT_VIEWER } from './viewerSettings'
 import type { ModelOptions, TextureOptions } from './types'
 import { parseBBoxParam } from '@/composables/useAreaPicker'
 
@@ -312,6 +313,7 @@ describe('gallery', () => {
     pseudonym: '',
     poster: new Blob(['p'], { type: 'image/jpeg' }),
     clip: new Blob(['c'], { type: 'video/mp4' }),
+    viewer: null,
   }
 
   afterEach(() => vi.unstubAllGlobals())
@@ -325,6 +327,14 @@ describe('gallery', () => {
     expect((form.get('poster') as File).name).toBe('poster.jpg')
     expect((form.get('clip') as File).name).toBe('turntable.mp4')
     expect([...form.keys()]).toHaveLength(6)
+  })
+
+  it('sends the lighting as a JSON object of numbers', () => {
+    const form = galleryForm({ ...submission, viewer: { ...DEFAULT_VIEWER, sunAzimuth: 90, ao: false } })
+    const viewer = JSON.parse(form.get('viewer') as string)
+    expect(viewer.sunAzimuth).toBe(90)
+    expect(viewer.ao).toBe(0)
+    expect(Object.values(viewer).every((v) => typeof v === 'number')).toBe(true)
   })
 
   it('leaves the clip out when there is none, and names a WebP poster', () => {

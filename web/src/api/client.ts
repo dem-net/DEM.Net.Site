@@ -1,4 +1,5 @@
 import { GENERATION_KINDS } from './types'
+import { viewerFromApi, viewerToApi } from './viewerSettings'
 import type {
   AssetInfo,
   Attribution,
@@ -456,6 +457,7 @@ export function galleryForm(s: GallerySubmission): FormData {
   const ext = s.poster.type === 'image/webp' ? 'webp' : s.poster.type === 'image/png' ? 'png' : 'jpg'
   form.append('poster', s.poster, `poster.${ext}`)
   if (s.clip) form.append('clip', s.clip, 'turntable.mp4')
+  if (s.viewer) form.append('viewer', JSON.stringify(viewerToApi(s.viewer)))
   return form
 }
 
@@ -490,6 +492,8 @@ export interface GalleryItemResponse {
   posterUrl: string
   clipUrl?: string | null
   modelUrl: string
+  /** Numbers, booleans as 0/1 (see viewerSettings.ts) */
+  viewer?: Record<string, number> | null
 }
 
 export interface GalleryPageResponse {
@@ -520,6 +524,7 @@ export function toGalleryItem(r: GalleryItemResponse): GalleryItem {
     posterUrl: absoluteUrl(r.posterUrl)!,
     clipUrl: absoluteUrl(r.clipUrl),
     modelUrl: absoluteUrl(r.modelUrl)!,
+    viewer: viewerFromApi(r.viewer),
   }
 }
 

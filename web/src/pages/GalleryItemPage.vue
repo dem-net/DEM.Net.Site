@@ -4,7 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Download, ExternalLink, KeyRound, LoaderCircle, RefreshCw, Trash2 } from '@lucide/vue'
 import { ApiError, GALLERY_ID, api, galleryAdmin, hashParam, safeUrl } from '@/api/client'
 import type { GalleryItem } from '@/api/types'
-import GlbViewer from '@/components/viewers/GlbViewer.vue'
+import TerrainViewer from '@/components/viewers/TerrainViewer.vue'
 import { GALLERY_KIND_LABELS, formatGalleryDate, galleryRegenerateLink, useGalleryAdmin } from '@/composables/gallery'
 import { formatBytes } from '@/composables/generationStats'
 import { SITE_NAME } from '@/seo'
@@ -145,7 +145,12 @@ onBeforeUnmount(() => abort?.abort())
 
     <div v-else-if="item" class="mt-4 grid gap-8 lg:grid-cols-5">
       <div class="lg:col-span-3">
-        <GlbViewer :src="item.modelUrl" :size-m-b="item.modelBytes / 1e6" :alt="`${item.title}, 3D model`" />
+        <TerrainViewer
+          :src="item.modelUrl"
+          :size-m-b="item.modelBytes / 1e6"
+          :alt="`${item.title}, 3D model`"
+          :settings="item.viewer"
+        />
       </div>
 
       <div class="min-w-0 lg:col-span-2">

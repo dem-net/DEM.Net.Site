@@ -1,4 +1,3 @@
-import { $scene } from '@google/model-viewer/lib/model-viewer-base.js'
 import { Material, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, type Object3D } from 'three'
 
 /**
@@ -11,19 +10,9 @@ const isTerrain = (m: Material) => m.name.startsWith('TerrainNode') || !!(m as M
  * Makes the terrain matte: metallic 0 and Specular F0 0, so the imagery isn't washed out at grazing
  * angles. Newer GLBs already carry this (KHR_materials_specular → MeshPhysicalMaterial); older ones
  * load as MeshStandardMaterial, which has no specular control, so it is swapped for a physical copy.
- * model-viewer's public API can't do this (setSpecularFactor is a no-op on standard materials),
- * hence the internal scene.
  */
-type ModelScene = Object3D & { models: Object3D[]; queueRender(): void }
-
-/** model-viewer's internal three.js scene (not public API). `models` are the glTF roots, without the shadow. */
-export const viewerScene = (viewer: HTMLElement) =>
-  (viewer as unknown as Record<symbol, ModelScene | undefined>)[$scene]
-
-export function makeTerrainMatte(viewer: HTMLElement) {
-  const scene = viewerScene(viewer)
-  if (!scene) return
-  scene.traverse((o) => {
+export function makeTerrainMatte(root: Object3D) {
+  root.traverse((o) => {
     if (!(o instanceof Mesh)) return
     const mats: Material[] = Array.isArray(o.material) ? o.material : [o.material]
     const out = mats.map((m) => {
@@ -44,5 +33,4 @@ export function makeTerrainMatte(viewer: HTMLElement) {
     })
     o.material = Array.isArray(o.material) ? out : out[0]!
   })
-  scene.queueRender()
 }

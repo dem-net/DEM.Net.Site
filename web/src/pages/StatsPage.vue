@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   LngLatBounds,
@@ -14,7 +14,7 @@ import { api } from '@/api/client'
 import type { GenerationDetail, GenerationStats } from '@/api/types'
 import BaseMap from '@/components/map/BaseMap.vue'
 import ToolLayout from '@/components/ToolLayout.vue'
-import GlbViewer from '@/components/viewers/GlbViewer.vue'
+import TerrainViewer from '@/components/viewers/TerrainViewer.vue'
 import { regenerateLink } from '@/composables/regenerate'
 import { useCatalog } from '@/composables/useCatalog'
 import {
@@ -30,7 +30,6 @@ import {
   type DatasetTotals,
 } from '@/composables/generationStats'
 
-const StlViewer = defineAsyncComponent(() => import('@/components/viewers/StlViewer.vue'))
 
 const { datasetByName } = useCatalog()
 const router = useRouter()
@@ -722,8 +721,12 @@ async function focus(i: number) {
               <button type="button" class="btn btn-secondary" @click="viewing = null"><MapIcon class="size-4" /> Back to map</button>
             </div>
           </div>
-          <StlViewer v-if="viewed.format === 'STL'" :key="viewing.url" :src="viewing.url" />
-          <GlbViewer v-else :key="viewing.url" :src="viewing.url" :size-m-b="(viewed.sizeBytes ?? 0) / 1e6" />
+          <TerrainViewer
+            :key="viewing.url"
+            :src="viewing.url"
+            :format="viewed.format === 'STL' ? 'STL' : 'GLB'"
+            :size-m-b="(viewed.sizeBytes ?? 0) / 1e6"
+          />
           <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-3">
             <span>Generated models are kept for a limited time, then deleted.</span>
             <a :href="viewing.url" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-medium text-accent hover:underline">

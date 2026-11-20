@@ -17,6 +17,8 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Website',
         items: [
+          'New 3D preview: sky lighting, a sun with real shadows and ambient occlusion, so the relief reads much better. The Lighting button adjusts the sun, sky, exposure, shadows and ambient occlusion.',
+          'Gallery: the poster and turntable use the lighting you chose, and the gallery shows your model with it.',
           'You can now support the project with Buy Me a Coffee.',
           'The FAQ and Expo are now sections of the About page, to make room in the menu.',
           'New Gallery: publish a glTF model with a poster and a turntable made in your browser, browse the models others shared, download them or generate them again. Every model is reviewed before it appears.',
@@ -32,6 +34,7 @@ export const releaseNotes: ReleaseNotes[] = [
       {
         name: 'Elevation API',
         items: [
+          'Gallery submissions can include the 3D preview lighting (viewer), returned with the item.',
           'Gallery endpoints (api/gallery): anonymous submissions with a private delete link, review by the owner, paged listing of the published models.',
           'OpenStreetMap data now comes from a local Protomaps archive instead of the Overpass API: faster and more reliable.',
           'The OSM model size estimate counts buildings and roads (onlyEstimateSize=true), and "Features only" models (withTerrain=false) work again.',
