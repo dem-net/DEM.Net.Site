@@ -5,7 +5,7 @@ import { useCatalog } from '@/composables/useCatalog'
 const provider = defineModel<string>('provider', { required: true })
 const quality = defineModel<1 | 2 | 3>('quality', { required: true })
 
-const { imagery } = useCatalog()
+const { imagery, imageryLabel } = useCatalog()
 const qualityLabels = { 1: 'Low', 2: 'Medium', 3: 'High' } as const
 </script>
 
@@ -14,7 +14,7 @@ const qualityLabels = { 1: 'Low', 2: 'Medium', 3: 'High' } as const
     <div>
       <label class="field-label" for="imagery">Imagery</label>
       <select id="imagery" v-model="provider" class="input">
-        <option v-for="p in imagery" :key="p.name" :value="p.name">{{ p.attribution?.text || p.name }}</option>
+        <option v-for="p in imagery" :key="p.name" :value="p.name">{{ imageryLabel(p.name) }}</option>
       </select>
     </div>
     <div>

@@ -11,6 +11,19 @@ export interface ReleaseNotes {
 
 export const releaseNotes: ReleaseNotes[] = [
   {
+    title: 'Week of November 22 – 28, 2026',
+    date: '2026-11-28',
+    layers: [
+      {
+        name: 'Website',
+        items: [
+          'Map to 3D: OpenStreetMap buildings, with their mapped colours, are now on by default (roads off), and the mesh detail starts at 10 %.',
+          'The three Thunderforest imagery styles (Outdoors, Landscape, Neighbourhood) now have distinct names.',
+        ],
+      },
+    ],
+  },
+  {
     title: 'Week of November 15 – 21, 2026',
     date: '2026-11-21',
     layers: [

@@ -10,7 +10,7 @@ import { MODEL_DEFAULTS, OSM_DEFAULTS } from './useModelOptions'
  *   relief=1                           3D relief on
  *   dataset, format=stl, texture=0, imagery, quality=1..3, z, detail, resolution=low|high|best, adornments=0, boxed=1, monuments=1, truescale=0
  *                                      model options that differ from the defaults (resolution: Mapterhorn)
- *   buildings=0, buildingcolors=1, buildingcolor=#rrggbb, roads=0, osmonly=1         OSM options that differ from the defaults (with osm=1)
+ *   osm=0 (OSM is on by default), buildings=0, buildingcolors=0, buildingcolor=#rrggbb, roads=1, osmonly=1   OSM options that differ from the defaults
  * Every value read from a link is validated; unknown or out-of-range values are ignored.
  * `pistes` (ski pistes, no longer offered) is still cleaned from old links but ignored.
  */

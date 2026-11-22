@@ -77,11 +77,11 @@ describe('model options query', () => {
 })
 
 describe('OSM options', () => {
-  it('keeps defaults out of the link and round-trips roads off', () => {
+  it('keeps defaults out of the link and round-trips roads on', () => {
     expect(osmToQuery(OSM_DEFAULTS)).toEqual({})
-    const q = osmToQuery({ ...OSM_DEFAULTS, osmHighways: false, osmOnly: true })
-    expect(q).toEqual({ roads: '0', osmonly: '1' })
-    expect(osmFromQuery(q)).toEqual({ osmHighways: false, osmOnly: true })
+    const q = osmToQuery({ ...OSM_DEFAULTS, osmHighways: true, osmOnly: true })
+    expect(q).toEqual({ roads: '1', osmonly: '1' })
+    expect(osmFromQuery(q)).toEqual({ osmHighways: true, osmOnly: true })
   })
 
   it('cleans but ignores the retired pistes key', () => {
