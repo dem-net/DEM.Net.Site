@@ -30,7 +30,7 @@ describe('regenerateLink', () => {
     })
     expect(regenerateLink(gen('terrain'), {})).toEqual({
       path: '/terrain',
-      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'SRTM_GL3', texture: '0', quality: '1', z: '1' },
+      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'SRTM_GL3', texture: '0', quality: '1', z: '1', detail: '50', osm: '0' },
       areaOnly: false,
     })
   })
@@ -72,17 +72,17 @@ describe('regenerateLink', () => {
     const link = regenerateLink(gen('osm'), {
       withBuildings: 'false',
       withSkiPistes: 'true', // no longer offered: ignored
-      withHighways: 'false',
+      withHighways: 'true',
       withTerrain: 'false',
       buildingsColor: '#E0E0E0',
-      withBuildingsColors: 'true',
+      withBuildingsColors: 'false',
     })!
     expect(link.query.osm).toBe('1')
     expect(osmFromQuery(link.query)).toEqual({
       osmBuildings: false,
-      useOsmBuildingsColor: true,
+      useOsmBuildingsColor: false,
       buildingsColor: '#e0e0e0',
-      osmHighways: false,
+      osmHighways: true,
       osmOnly: true,
     })
   })

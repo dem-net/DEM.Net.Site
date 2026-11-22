@@ -62,14 +62,15 @@ function shareUrl(): string {
   const state = baseMap.value?.getState()
   const query = {
     ...(area.bbox.value && { bbox: bboxToPath(area.bbox.value) }),
-    ...(withOsm.value && { osm: '1', ...osmToQuery(osm) }),
+    ...(withOsm.value ? { osm: '1', ...osmToQuery(osm) } : { osm: '0' }),
     ...(state && mapStateToQuery(state)),
     ...optionsToQuery(options),
   }
   return new URL(router.resolve({ path: route.path, query }).href, location.origin).href
 }
 const osm = useOsmOptions(osmFromQuery(route.query))
-const withOsm = ref(route.query.osm === '1')
+// OSM is on by default; `osm=0` turns it off. An STL link without `osm` is a plain terrain model (OSM is glTF only).
+const withOsm = ref(route.query.osm === '1' || (route.query.osm !== '0' && options.format !== 'STL'))
 const gen = useGenerate()
 const showResult = ref(false)
 

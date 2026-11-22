@@ -10,7 +10,7 @@ import { releaseNotes } from '@/content/releaseNotes'
 
 const SWISSTOPO_TERMS = 'https://www.swisstopo.admin.ch/en/home/meta/conditions/geodata/ogd.html'
 
-const { datasets, imagery, loaded } = useCatalog()
+const { datasets, imagery, loaded, imageryLabel } = useCatalog()
 
 /** The page holds what were the FAQ and Expo pages (/faq and /expo redirect here). */
 const sections = [
@@ -172,7 +172,7 @@ const sections = [
       <div class="mt-4 space-y-2">
         <details v-for="p in imagery" :key="p.name" class="card group px-4 py-3">
           <summary class="flex cursor-pointer list-none flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span class="font-semibold">{{ p.attribution?.text || p.name }}</span>
+            <span class="font-semibold">{{ imageryLabel(p.name) }}</span>
             <span class="text-sm text-ink-3">max zoom {{ p.maxZoom }}</span>
             <span class="ml-auto text-xs text-accent group-open:hidden">Details</span>
           </summary>

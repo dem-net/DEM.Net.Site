@@ -9,7 +9,7 @@ export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
   imageryProvider: DEFAULT_IMAGERY,
   textureQuality: 2,
   zFactor: 1.5,
-  meshDetail: 50,
+  meshDetail: 10,
   meshQuality: 2,
   adornments: true,
   boxed: false,
@@ -23,9 +23,9 @@ export function useModelOptions(overrides: Partial<ModelOptions> = {}) {
 
 export const OSM_DEFAULTS: Readonly<OsmOptions> = Object.freeze({
   osmBuildings: true,
-  useOsmBuildingsColor: false,
+  useOsmBuildingsColor: true,
   buildingsColor: '#ffffff',
-  osmHighways: true,
+  osmHighways: false,
   osmOnly: false,
 })
 

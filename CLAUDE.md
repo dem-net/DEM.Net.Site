@@ -36,7 +36,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
     - The GPX endpoint also accepts `onlyEstimateSize=true` (since DEM.Net.WebAPI#27): same response as the bbox endpoint (`meshQualityEstimates` included), computed over the server's own margin around the track, but each call uploads the file again.
     - The GPX page still estimates with the bbox endpoint over the track bounds plus 1 km, so option changes don't re-upload the track. It only warns.
     - `useSizeEstimate()` handles the debouncing and the "Reduce to fit" detail level (`detailToFit`, linear in `meshReduceFactor`).
-  - `meshReduceFactor` (0.1–1) is the UI's "Mesh detail" (10–100 %, default 50 %).
+  - `meshReduceFactor` (0.1–1) is the UI's "Mesh detail" (10–100 %, default 10 %).
   - `meshQuality` (1–4) is the Mapterhorn "Resolution" (Low, Medium, High, Best; default Medium), shown when the dataset has `isMapterhorn`. Always sent, other datasets ignore it. The estimate's `meshQualityEstimates` give each option's spacing and size. Share-link key `resolution=low|high|best` (`quality` is the texture quality).
   - **Textures** (`texturePath()`, `api.textures()`): `GET /api/texture/bbox/{w,e,s,n}?outputs=texture,normalmap,heightmap` generates only the requested images.
     - Every image comes with a world file (`.jgw`/`.pgw`) and a `.prj`, plus one ZIP with `metadata.json` (min/max elevation for decoding the 16-bit height map). `toTextureResult()` rejects an image without its georeferencing.
@@ -48,7 +48,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - One shared `@microsoft/signalr` connection to `/elevation-hub`.
   - `useProgress('generate' | 'export')` joins and leaves the server group (`Join/LeaveGeneratorGroup`, `Join/LeaveExportGroup`) and listens for `ReportGenerateProgress` / `ReportExportProgress`. Group membership is ref-counted and re-joined after a reconnect.
   - Generation calls pass `clientConnectionId` (from `ensureConnected()`) so the server knows where to push progress. `useGenerate()` (`src/composables/useGenerate.ts`) wraps this with busy, error, cancel and result state.
-- **Shared catalog** (`src/composables/useCatalog.ts`): the dataset and imagery lists are fetched once per session as module-level refs. There is no Vuex or Pinia.
+- **Shared catalog** (`src/composables/useCatalog.ts`): the dataset and imagery lists are fetched once per session as module-level refs. There is no Vuex or Pinia. Imagery is labelled with `imageryLabel()`: the attribution text, or the provider name when several share that text (the Thunderforest styles).
 - **Map** (`src/components/map/`):
   - `BaseMap.vue` creates the MapLibre map: OpenFreeMap vector style, plus an OpenTopoMap raster layer and AWS Terrarium hillshade/3D terrain, both added once and switched by toggling visibility. In Topo, every layer of the vector style is hidden too, so its tiles aren't fetched under the raster.
     - Never call `setStyle()`: it would wipe the drawing layers.
@@ -59,7 +59,7 @@ Deploy: `.github/workflows/deploy.yml` tests, builds and publishes `web/dist` to
   - `AddressSearch.vue` uses Photon (`src/composables/geocoder.ts`). Nominatim's usage policy forbids autocomplete.
 - **Pages** (`src/pages/`):
   - Tool pages use `ToolLayout` (a side panel with a sticky footer for the primary action, and the map).
-  - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`.
+  - `TerrainPage` covers both plain terrain and OSM models: the OSM switch selects `/api/model/3d/bbox/osm/…`. OSM is on by default (buildings with mapped colours, no roads, terrain included; `OSM_DEFAULTS`); links say `osm=0` to turn it off, and an STL link without `osm` opens with it off.
     - OSM layers offered: buildings and roads (`withHighways`). Ski pistes are hidden: the API reads OSM from a Protomaps PMTiles archive, which has no pistes, and refuses `withSkiPistes=true` (HTTP 400).
     - Buildings come from a second archive when the server has it: Overture Maps buildings (`OsmElevationOptions.BuildingsPMTilesFilePath`), which keeps heights, floors, roof shapes and facade/roof colours. The model credits then include Overture.
     - The OSM estimate can come back `success:false` with a `message` (extent needs too many PMTiles tiles); `SizeGauge` shows that message.

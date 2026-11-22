@@ -81,7 +81,9 @@ export function regenerateLink(g: Generation, apiOptions: ApiOptions): Regenerat
     if (textureQuality !== 2) q.quality = String(textureQuality)
     return { path: '/textures', query: q, areaOnly: false }
   }
-  const query = { bbox, ...optionsToQuery(modelOptionsFromApi(g, apiOptions)) }
+  const query: Record<string, string> = { bbox, ...optionsToQuery(modelOptionsFromApi(g, apiOptions)) }
+  // OSM is on by default in Map to 3D, so other models say `osm=0`.
   if (g.kind === 'osm') Object.assign(query, { osm: '1' }, osmToQuery(osmOptionsFromApi(apiOptions)))
+  else query.osm = '0'
   return { path: '/terrain', query, areaOnly: g.kind === 'gpx' }
 }
