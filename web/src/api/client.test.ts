@@ -34,6 +34,7 @@ const opts: ModelOptions = {
   adornments: true,
   boxed: false,
   boxMonuments: false,
+  water: true,
   trueScale: true,
 }
 
@@ -77,6 +78,7 @@ describe('terrainModelPath', () => {
       adornments: 'true',
       boxed: 'false',
       boxStyle: 'Solid',
+      water: 'true',
       trueScale: 'true',
       clientConnectionId: 'abc',
     })
@@ -107,6 +109,13 @@ describe('terrainModelPath', () => {
     expect(q({ ...opts, boxed: false, boxMonuments: true })).toBe('Solid')
     expect(q({ ...opts, boxed: true, boxMonuments: true, format: 'STL' })).toBe('Solid')
     expect(q({ ...opts, boxed: true })).toBe('Solid')
+  })
+
+  it('sends water=true for glTF only', () => {
+    const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('water')
+    expect(q(opts)).toBe('true')
+    expect(q({ ...opts, water: false })).toBe('false')
+    expect(q({ ...opts, format: 'STL' })).toBe('false')
   })
 
   it('switches to the OSM endpoint and maps OSM flags', () => {

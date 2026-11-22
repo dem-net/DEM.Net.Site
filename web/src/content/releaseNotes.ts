@@ -19,7 +19,16 @@ export const releaseNotes: ReleaseNotes[] = [
         items: [
           'Map to 3D: OpenStreetMap buildings, with their mapped colours, are now on by default (roads off), and the mesh detail starts at 10 %.',
           'The three Thunderforest imagery styles (Outdoors, Landscape, Neighbourhood) now have distinct names.',
+          'glTF models of areas that go below 0 m now show the sea: translucent water at 0 m, with water on the walls of boxed models. "Sea at 0 m" in the advanced options turns it off, for land below sea level like the Dead Sea.',
         ],
+      },
+      {
+        name: 'Elevation API',
+        items: ['New water option for glTF models: the sea at 0 m where the terrain goes below it, as its own translucent "Water" node in the model.'],
+      },
+      {
+        name: 'DEM.Net library',
+        items: ['Terrain meshes can get a flat water surface at a given level, with water walls on the sides of boxed models (TerrainWaterOptions).'],
       },
     ],
   },

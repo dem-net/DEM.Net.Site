@@ -33,6 +33,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
 import { makeTerrainMatte } from './matteTerrain'
 import { setWireframe } from './wireframe'
+import { isWater } from './water'
 import { fitDistance, MAX_PHI, START_PHI, START_THETA, sunDirection, type Orbit } from './lighting'
 import { DEFAULT_VIEWER, type ViewerSettings } from '@/api/viewerSettings'
 
@@ -56,10 +57,26 @@ export interface SceneOptions {
   touch: boolean
 }
 
-/** AO at half resolution: a quarter of the fragment work, and the denoise hides the difference. */
+/**
+ * AO at half resolution: a quarter of the fragment work, and the denoise hides the difference.
+ * `hidden` objects (the translucent water) are left out of its depth and normals, so the AO is the terrain's,
+ * not a dark band where the water surface meets the shore.
+ */
 class HalfResGTAOPass extends GTAOPass {
+  hidden: Object3D[] = []
+
   override setSize(width: number, height: number) {
     super.setSize(Math.max(1, Math.ceil(width / 2)), Math.max(1, Math.ceil(height / 2)))
+  }
+
+  override render(...args: Parameters<GTAOPass['render']>) {
+    const visible = this.hidden.map((o) => o.visible)
+    for (const o of this.hidden) o.visible = false
+    try {
+      super.render(...args)
+    } finally {
+      this.hidden.forEach((o, i) => (o.visible = visible[i]!))
+    }
   }
 }
 
@@ -221,12 +238,16 @@ export class TerrainScene {
       disposeObject(this.model)
     }
     this.model = model
+    const water: Object3D[] = []
     model.traverse((o) => {
       if (o instanceof Mesh) {
-        o.castShadow = true
+        const wet = isWater(o)
+        if (wet) water.push(o)
+        o.castShadow = !wet // the sea at 0 m: shadows fall on it, it casts none on the seabed
         o.receiveShadow = true
       }
     })
+    this.aoPass.hidden = water
     this.scene.add(model)
     if (this.wireframe) setWireframe(model, true)
 

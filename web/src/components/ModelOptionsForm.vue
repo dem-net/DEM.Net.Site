@@ -133,6 +133,12 @@ const formats = computed(() => [
           hint="Draw well-known monuments (Eiffel Tower, Burj Khalifa…) on the walls at the model's scale, as a height reference. Only those that fit and are large enough to read"
         />
         <ToggleSwitch
+          v-if="isGltf"
+          v-model="options.water"
+          label="Sea at 0 m"
+          hint="Where the area goes below 0 m, show the sea as translucent water at 0 m (with water on the walls of a boxed model). Turn it off for land below sea level, like the Dead Sea"
+        />
+        <ToggleSwitch
           v-model="options.trueScale"
           label="True proportions"
           hint="Keep the real ratio between heights and distances. Off: Web Mercator proportions, where the relief looks flatter away from the equator (×1.3 at 40°)"

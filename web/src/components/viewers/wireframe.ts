@@ -1,4 +1,5 @@
 import { Mesh, MeshBasicMaterial, type Material, type Object3D } from 'three'
+import { isWater } from './water'
 
 const OVERLAY = 'wireframe-overlay'
 
@@ -12,7 +13,7 @@ const wireMaterial = new MeshBasicMaterial({
 })
 
 /**
- * Draws (or removes) the triangle edges of every mesh under `root`, over its surface.
+ * Draws (or removes) the triangle edges of every mesh under `root` but the water (a few large flat triangles), over its surface.
  * Each overlay is a child mesh sharing the original geometry, so no geometry is copied
  * (three.js builds and caches an edge index per geometry). The surfaces are pushed back
  * with polygon offset while the overlay is on, so the lines don't z-fight with them.
@@ -20,7 +21,7 @@ const wireMaterial = new MeshBasicMaterial({
 export function setWireframe(root: Object3D, on: boolean) {
   const meshes: Mesh[] = []
   root.traverse((o) => {
-    if (o instanceof Mesh && o.name !== OVERLAY) meshes.push(o)
+    if (o instanceof Mesh && o.name !== OVERLAY && !isWater(o)) meshes.push(o)
   })
   for (const mesh of meshes) {
     const existing = mesh.children.find((c) => c.name === OVERLAY)
