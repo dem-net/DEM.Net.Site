@@ -135,6 +135,7 @@ function modelQuery(o: ModelOptions, connectionId: string | null) {
     adornments: o.format === 'glTF' && o.adornments,
     boxed: o.format === 'glTF' && o.boxed,
     boxStyle: o.format === 'glTF' && o.boxed && o.boxMonuments ? 'Monuments' : 'Solid',
+    water: o.format === 'glTF' && o.water,
     trueScale: o.trueScale,
     clientConnectionId: connectionId,
   }

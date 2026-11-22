@@ -14,6 +14,7 @@ export const MODEL_DEFAULTS: Readonly<ModelOptions> = Object.freeze({
   adornments: true,
   boxed: false,
   boxMonuments: false,
+  water: true,
   trueScale: true,
 })
 

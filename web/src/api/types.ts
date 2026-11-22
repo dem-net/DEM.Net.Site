@@ -91,6 +91,8 @@ export interface ModelOptions {
   boxed: boolean
   /** Monument silhouettes on the box walls at the model's scale, as a height reference (boxed glTF only). */
   boxMonuments: boolean
+  /** Where the area goes below 0 m: a translucent sea surface at 0 m, with water walls when boxed (glTF only; the API's default is false). */
+  water: boolean
   /** True proportions: X and Y at true metres at the model center instead of Web Mercator (the API's default is true). */
   trueScale: boolean
 }

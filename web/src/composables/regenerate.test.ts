@@ -26,11 +26,12 @@ describe('regenerateLink', () => {
       adornments: true,
       boxed: false,
       boxMonuments: false,
+      water: false,
       trueScale: true,
     })
     expect(regenerateLink(gen('terrain'), {})).toEqual({
       path: '/terrain',
-      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'SRTM_GL3', texture: '0', quality: '1', z: '1', detail: '50', osm: '0' },
+      query: { bbox: '6.82,6.91,45.8,45.86', dataset: 'SRTM_GL3', texture: '0', quality: '1', z: '1', detail: '50', water: '0', osm: '0' },
       areaOnly: false,
     })
   })
@@ -59,6 +60,7 @@ describe('regenerateLink', () => {
       adornments: false,
       boxed: true,
       boxMonuments: true,
+      water: false,
       trueScale: false,
     })
   })
