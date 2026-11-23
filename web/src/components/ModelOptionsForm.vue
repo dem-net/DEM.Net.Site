@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ChevronDown } from '@lucide/vue'
-import { MIN_MESH_DETAIL } from '@/api/client'
+import { hasBathymetry, MIN_MESH_DETAIL } from '@/api/client'
 import { MESH_QUALITIES } from '@/api/types'
 import type { MeshQuality, ModelOptions, QualityEstimate } from '@/api/types'
 import { useCatalog } from '@/composables/useCatalog'
@@ -133,7 +133,7 @@ const formats = computed(() => [
           hint="Draw well-known monuments (Eiffel Tower, Burj Khalifa…) on the walls at the model's scale, as a height reference. Only those that fit and are large enough to read"
         />
         <ToggleSwitch
-          v-if="isGltf"
+          v-if="isGltf && hasBathymetry(options.dataset)"
           v-model="options.water"
           label="Sea at 0 m"
           hint="Where the area goes below 0 m, show the sea as translucent water at 0 m (with water on the walls of a boxed model). Turn it off for land below sea level, like the Dead Sea"
