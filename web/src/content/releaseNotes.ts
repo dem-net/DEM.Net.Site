@@ -20,6 +20,7 @@ export const releaseNotes: ReleaseNotes[] = [
           'Map to 3D: OpenStreetMap buildings, with their mapped colours, are now on by default (roads off), and the mesh detail starts at 10 %.',
           'The three Thunderforest imagery styles (Outdoors, Landscape, Neighbourhood) now have distinct names.',
           'glTF models from the bathymetry datasets (ETOPO1, GEBCO) now show the sea where the area goes below 0 m: translucent water at 0 m, with water on the walls of boxed models. "Sea at 0 m" in the advanced options turns it off, for land below sea level like the Dead Sea.',
+          'The dataset lists (the "Elevation data" picker and About) now show which datasets include the sea floor (bathymetry).',
         ],
       },
       {
