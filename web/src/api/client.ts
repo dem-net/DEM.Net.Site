@@ -122,6 +122,11 @@ export function toModelResult(info: AssetInfo, format: ModelOptions['format']): 
   }
 }
 
+/** Datasets that include the sea floor (ETOPO1, GEBCO_2019…): the only ones where the sea at 0 m (`water`) makes sense. */
+export function hasBathymetry(dataset: string): boolean {
+  return /^(ETOPO|GEBCO)/i.test(dataset)
+}
+
 function modelQuery(o: ModelOptions, connectionId: string | null) {
   return {
     dataset: o.dataset,
@@ -135,7 +140,7 @@ function modelQuery(o: ModelOptions, connectionId: string | null) {
     adornments: o.format === 'glTF' && o.adornments,
     boxed: o.format === 'glTF' && o.boxed,
     boxStyle: o.format === 'glTF' && o.boxed && o.boxMonuments ? 'Monuments' : 'Solid',
-    water: o.format === 'glTF' && o.water,
+    water: o.format === 'glTF' && o.water && hasBathymetry(o.dataset),
     trueScale: o.trueScale,
     clientConnectionId: connectionId,
   }

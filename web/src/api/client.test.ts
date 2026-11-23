@@ -6,6 +6,7 @@ import {
   galleryForm,
   galleryOwnerLink,
   GENERATION_STATS_PATH,
+  hasBathymetry,
   API_BASE,
   bboxToPath,
   meshReduceFactor,
@@ -78,7 +79,7 @@ describe('terrainModelPath', () => {
       adornments: 'true',
       boxed: 'false',
       boxStyle: 'Solid',
-      water: 'true',
+      water: 'false',
       trueScale: 'true',
       clientConnectionId: 'abc',
     })
@@ -111,11 +112,21 @@ describe('terrainModelPath', () => {
     expect(q({ ...opts, boxed: true })).toBe('Solid')
   })
 
-  it('sends water=true for glTF only', () => {
+  it('sends water=true for glTF bathymetry datasets only', () => {
     const q = (o: ModelOptions) => new URL(terrainModelPath(bbox, o, null, null), 'https://x').searchParams.get('water')
-    expect(q(opts)).toBe('true')
-    expect(q({ ...opts, water: false })).toBe('false')
-    expect(q({ ...opts, format: 'STL' })).toBe('false')
+    expect(q(opts)).toBe('false') // AW3D30: land only
+    for (const dataset of ['ETOPO1', 'GEBCO_2019']) {
+      expect(q({ ...opts, dataset })).toBe('true')
+      expect(q({ ...opts, dataset, water: false })).toBe('false')
+      expect(q({ ...opts, dataset, format: 'STL' })).toBe('false')
+    }
+  })
+
+  it('recognizes bathymetry datasets', () => {
+    expect(hasBathymetry('ETOPO1')).toBe(true)
+    expect(hasBathymetry('GEBCO_2019')).toBe(true)
+    expect(hasBathymetry('Mapterhorn')).toBe(false)
+    expect(hasBathymetry('SRTM_GL3')).toBe(false)
   })
 
   it('switches to the OSM endpoint and maps OSM flags', () => {
