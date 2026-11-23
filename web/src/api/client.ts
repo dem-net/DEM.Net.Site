@@ -122,7 +122,7 @@ export function toModelResult(info: AssetInfo, format: ModelOptions['format']): 
   }
 }
 
-/** Datasets that include the sea floor (ETOPO1, GEBCO_2019…): the only ones where the sea at 0 m (`water`) makes sense. */
+/** Datasets that include the sea floor (ETOPO1, GEBCO_2026, GEBCO_2019…), labelled in the dataset lists: the only ones where the sea at 0 m (`water`) makes sense. */
 export function hasBathymetry(dataset: string): boolean {
   return /^(ETOPO|GEBCO)/i.test(dataset)
 }

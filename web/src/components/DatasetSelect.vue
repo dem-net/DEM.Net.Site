@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { safeUrl } from '@/api/client'
+import { hasBathymetry, safeUrl } from '@/api/client'
 import { useCatalog } from '@/composables/useCatalog'
 
 const model = defineModel<string>({ required: true })
@@ -14,11 +14,12 @@ const selected = computed(() => datasetByName(model.value))
     <select id="dataset" v-model="model" class="input" :disabled="!datasets.length">
       <option v-if="!datasets.length" :value="model">Loading datasets…</option>
       <option v-for="d in datasets" :key="d.name" :value="d.name">
-        {{ d.name }} · {{ d.resolutionMeters }} m
+        {{ d.name }} · {{ d.resolutionMeters }} m{{ hasBathymetry(d.name) ? ' · with bathymetry' : '' }}
       </option>
     </select>
     <p v-if="selected" class="mt-1 text-xs text-ink-3">
       {{ selected.description }}
+      <template v-if="hasBathymetry(selected.name)">Includes the sea floor (bathymetry).</template>
       <a v-if="safeUrl(selected.publicUrl)" :href="safeUrl(selected.publicUrl)" target="_blank" rel="noopener noreferrer" class="underline">Source</a>
     </p>
   </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { safeUrl } from '@/api/client'
+import { hasBathymetry, safeUrl } from '@/api/client'
 import BrandIcon from '@/components/BrandIcon.vue'
 import ExpoShowcase from '@/components/ExpoShowcase.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
@@ -143,6 +143,12 @@ const sections = [
           <summary class="flex cursor-pointer list-none flex-wrap items-baseline gap-x-3 gap-y-1">
             <span class="font-semibold">{{ d.name }}</span>
             <span class="text-sm text-ink-3">{{ d.resolutionMeters }} m · {{ d.extentInfo ?? 'Global' }}</span>
+            <span
+              v-if="hasBathymetry(d.name)"
+              class="rounded-full border border-line px-2 py-px text-xs text-ink-2"
+              title="Includes the sea floor"
+              >Bathymetry</span
+            >
             <span class="ml-auto text-xs text-accent group-open:hidden">Details</span>
           </summary>
           <p class="mt-2 text-sm text-ink-2">{{ d.description }}</p>
