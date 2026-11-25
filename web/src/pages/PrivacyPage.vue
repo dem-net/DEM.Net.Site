@@ -79,7 +79,6 @@ const optedOut = document.cookie.split('; ').includes('analytics_optout=1')
         <li>OpenFreeMap, OpenTopoMap and the AWS terrain tiles, for the map;</li>
         <li>Photon (komoot), for place search, and the place name of the area you choose;</li>
         <li>Google Fonts, for the font;</li>
-        <li>Vimeo, for the video on the home page (embedded with "do not track");</li>
         <li>Sketchfab, only when you choose to publish a model there.</li>
       </ul>
     </section>

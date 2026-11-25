@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { ArrowRight, Images, Layers, Mountain, Route, Spline } from '@lucide/vue'
+import HeroShowcase from '@/components/HeroShowcase.vue'
 import NewBadge from '@/components/NewBadge.vue'
 import SupportBlock from '@/components/SupportBlock.vue'
 
@@ -46,16 +47,7 @@ const tools = [
           <RouterLink to="/about#faq" class="btn btn-secondary px-5 py-2.5">Use the API</RouterLink>
         </div>
       </div>
-      <div class="aspect-video overflow-hidden rounded-2xl bg-subtle shadow-lg">
-        <iframe
-          src="https://player.vimeo.com/video/416024952?dnt=1"
-          title="Elevation API demo"
-          class="size-full"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          loading="lazy"
-        />
-      </div>
+      <HeroShowcase />
     </section>
 
     <section class="mx-auto max-w-6xl px-4 pb-16">

@@ -21,6 +21,7 @@ export const releaseNotes: ReleaseNotes[] = [
           'The three Thunderforest imagery styles (Outdoors, Landscape, Neighbourhood) now have distinct names.',
           'glTF models from the bathymetry datasets (ETOPO1, GEBCO) now show the sea where the area goes below 0 m: translucent water at 0 m, with water on the walls of boxed models. "Sea at 0 m" in the advanced options turns it off, for land below sea level like the Dead Sea.',
           'The dataset lists (the "Elevation data" picker and About) now show which datasets include the sea floor (bathymetry).',
+          'The home page now shows the latest models from the gallery, turning on their turntables, instead of the old Vimeo video.',
         ],
       },
       {
