@@ -26,11 +26,17 @@ export const releaseNotes: ReleaseNotes[] = [
       },
       {
         name: 'Elevation API',
-        items: ['New water option for glTF models from the bathymetry datasets (ETOPO1, GEBCO): the sea at 0 m where the terrain goes below it, as its own translucent "Water" node in the model.'],
+        items: [
+          'New water option for glTF models from the bathymetry datasets (ETOPO1, GEBCO): the sea at 0 m where the terrain goes below it, as its own translucent "Water" node in the model.',
+          'glTF adornments are easier to read: the long attribution text is replaced by the dataset name (the full credits stay in the model), and a vertical bar at the north-east corner shows the lowest and highest altitudes of the area.',
+        ],
       },
       {
         name: 'DEM.Net library',
-        items: ['Terrain meshes can get a flat water surface at a given level, with water walls on the sides of boxed models (TerrainWaterOptions).'],
+        items: [
+          'Terrain meshes can get a flat water surface at a given level, with water walls on the sides of boxed models (TerrainWaterOptions).',
+          'Model adornments show the short dataset name, and AdornmentsService.CreateElevationBar draws an altitude bar from the lowest to the highest point.',
+        ],
       },
     ],
   },
