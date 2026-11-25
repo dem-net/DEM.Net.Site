@@ -67,7 +67,7 @@ function contentSecurityPolicy(apiBase: string): Plugin {
       'https://m.elevationapi.com', // analytics beacons (sendBeacon)
     ].join(' '),
     "worker-src 'self' blob:",
-    'frame-src https://player.vimeo.com',
+    "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
